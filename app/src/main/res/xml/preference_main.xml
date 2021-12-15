@@ -15,6 +15,11 @@
         android:defaultValue="false"
         app:title="@string/try_open_other_schema"/>
 
+    <SwitchPreferenceCompat
+        android:key="auto_open_identify_schema_open_url"
+        android:defaultValue="false"
+        app:title="@string/try_open_other_schema_open_url"/>
+
     <PreferenceCategory
         android:title="@string/settings_1922"/>
 

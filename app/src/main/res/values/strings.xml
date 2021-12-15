@@ -15,6 +15,7 @@
     <string name="settings_copy_text">Copy Text</string>
     <string name="settings_1922">Scan 1922</string>
     <string name="try_open_other_schema">Trying detect other action:web link, email or sms</string>
+    <string name="try_open_other_schema_open_url">Automatically open the browser when the URL is detected</string>
     <string name="confirm_open_schema">It may be risk!Do you want to open this content form other app?\n%s</string>
     <string name="detect_schema">Detect content which is not 1922 SMS</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>

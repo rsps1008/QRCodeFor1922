@@ -14,10 +14,15 @@ import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -47,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         private const val PREF_CLOSE_APP_AFTER_SCAN = "close_after_scan"
         private const val PREF_VIBRATE_WHEN_SUCCESS = "vibrate_when_success"
         private const val PREF_AUTO_OPEN_SCHEMA = "auto_open_identify_schema"
+        private const val PREF_AUTO_OPEN_SCHEMA_OPEN_URL = "auto_open_identify_schema_open_url"
         private const val PREF_AUTO_COPY_TEXT = "auto_copy_non_1922"
         private const val PREF_COPY_TEXT_VIBRATE = "vibrate_when_copy_text_success"
 
@@ -372,7 +378,7 @@ class MainActivity : AppCompatActivity() {
                 vibrate()
             }
             if (TextUtils.equals(barcode.sms?.phoneNumber, VAILD_NUMBER)) {
-                val manager = SmsManager.getSmsManagerForSubscriptionId(SmsManager.getDefaultSmsSubscriptionId())
+                val manager = SmsManager.getDefault()
                 var appendFamilyStr = ""
                 if (mAccompanyNum != 0) {
                     appendFamilyStr = "+$mAccompanyNum"
@@ -385,7 +391,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 startActivity(sendIntent)
                 if (mPref.getBoolean(PREF_CLOSE_APP_AFTER_SCAN, false)) {
-//                    finish()
+                    finish()
                 }
             }
         } else {
@@ -393,37 +399,43 @@ class MainActivity : AppCompatActivity() {
                 val sendIntent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse(barcode.rawValue)
                 }
-                if (packageManager?.queryIntentActivities(sendIntent, 0) != null) {
-                    val dialog = MaterialAlertDialogBuilder(this@MainActivity)
-                    dialog.setTitle(getString(R.string.detect_schema))
-                    dialog.setMessage(
-                        String.format(
-                            getString(R.string.confirm_open_schema),
-                            barcode.rawValue
+                if (mPref.getBoolean(PREF_AUTO_OPEN_SCHEMA_OPEN_URL, false) && (startWithHttp(barcode.rawValue))) {
+                    val uri = Uri.parse(barcode.rawValue)
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    startActivity(intent)
+                }else{
+                    if (packageManager?.queryIntentActivities(sendIntent, 0) != null) {
+                        val dialog = MaterialAlertDialogBuilder(this@MainActivity)
+                        dialog.setTitle(getString(R.string.detect_schema))
+                        dialog.setMessage(
+                            String.format(
+                                getString(R.string.confirm_open_schema),
+                                barcode.rawValue
+                            )
                         )
-                    )
-                    dialog.setPositiveButton(
-                        getString(android.R.string.ok)
-                    ) { dialog, which ->
-                        bRedirectDialogShowing = false
-                        startActivity(sendIntent)
-                    }
-                    dialog.setNeutralButton(
-                        getString(R.string.copy_to_clipboard)
-                    ) { dialog, which ->
-                        bRedirectDialogShowing = false
+                        dialog.setPositiveButton(
+                            getString(android.R.string.ok)
+                        ) { dialog, which ->
+                            bRedirectDialogShowing = false
+                            startActivity(sendIntent)
+                        }
+                        dialog.setNeutralButton(
+                            getString(R.string.copy_to_clipboard)
+                        ) { dialog, which ->
+                            bRedirectDialogShowing = false
+                            copyToClipboard(barcode.rawValue)
+                        }
+                        dialog.setNegativeButton(
+                            android.R.string.cancel
+                        ) { _, _ -> bRedirectDialogShowing = false }
+                        dialog.setOnCancelListener {
+                            bRedirectDialogShowing = false
+                        }
+                        dialog.show()
+                        bRedirectDialogShowing = true
+                    } else {
                         copyToClipboard(barcode.rawValue)
                     }
-                    dialog.setNegativeButton(
-                        android.R.string.cancel
-                    ) { _, _ -> bRedirectDialogShowing = false }
-                    dialog.setOnCancelListener {
-                        bRedirectDialogShowing = false
-                    }
-                    dialog.show()
-                    bRedirectDialogShowing = true
-                } else {
-                    copyToClipboard(barcode.rawValue)
                 }
             } else {
                 copyToClipboard(barcode.rawValue)
@@ -434,4 +446,9 @@ class MainActivity : AppCompatActivity() {
         }, 1500)
         mLastTriggerText = barcode.rawValue
     }
+
+    private fun startWithHttp(content: String): Boolean {
+        return (content.startsWith("http://") or content.startsWith("https://"))
+    }
+
 }
