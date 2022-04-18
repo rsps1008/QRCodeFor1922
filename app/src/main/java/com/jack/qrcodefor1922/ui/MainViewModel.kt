@@ -3,25 +3,28 @@ package com.jack.qrcodefor1922.ui
 import android.app.Application
 import android.content.*
 import android.net.Uri
-import android.os.*
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
+import android.os.Message
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.room.Room
 import com.google.mlkit.vision.barcode.Barcode
 import com.jack.qrcodefor1922.Utils.getDatabaseDao
 import com.jack.qrcodefor1922.ui.MainActivity.Companion.PREFKEY
-import com.jack.qrcodefor1922.ui.database.AppDatabase
 import com.jack.qrcodefor1922.ui.database.ScanResult
 import com.jack.qrcodefor1922.ui.database.TYPE
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var mLastTriggerText: String = ""
@@ -108,6 +111,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _personNum.value = mAccompanyNum.toString()
     }
 
+    fun startWithHttp(content: String): Boolean {
+        return (content.startsWith("http://") or content.startsWith("https://"))
+    }
+
     private fun triggerBarcode(barcode: Barcode) {
         if (barcode.rawValue == null || mHasTrigger ||
             TextUtils.equals(mLastTriggerText, barcode.rawValue)
@@ -140,21 +147,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             if (mPref.getBoolean(PREF_AUTO_OPEN_SCHEMA, false)) {
                 synchronized(obj) {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse(barcode.rawValue)
-                    }
-                    if (getApplication<Application>().packageManager?.queryIntentActivities(
-                            intent,
-                            0
-                        ) != null
-                    ) {
-                        mTempIntent = intent
-                        _showDetectOtherDialog.value = barcode
-                        _showDetectOtherDialog.value = null
-                        bRedirectDialogShowing = true
-                    } else {
-                        copyToClipboard(barcode.rawValue)
-                    }
+                    if(mPref.getBoolean(PREF_AUTO_OPEN_URL, false) && startWithHttp(barcode.rawValue)) {
+                        Log.d("debugn",barcode.rawValue)
+                        val uri = Uri.parse(barcode.rawValue)
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        _startActivity.value = intent
+                    }else{
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse(barcode.rawValue)
+                        }
+                        if (getApplication<Application>().packageManager?.queryIntentActivities(
+                                intent,
+                                0
+                            ) != null
+                        ) {
+                            mTempIntent = intent
+                            _showDetectOtherDialog.value = barcode
+                            _showDetectOtherDialog.value = null
+                            bRedirectDialogShowing = true
+                        } else {
+                            copyToClipboard(barcode.rawValue)
+                        }}
                 }
                 saveResultToDb(barcode.rawValue, TYPE.REDIRECT)
             } else {
@@ -268,6 +281,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private const val PREF_CLOSE_APP_AFTER_SCAN = "close_after_scan"
         private const val PREF_VIBRATE_WHEN_SUCCESS = "vibrate_when_success"
         private const val PREF_AUTO_OPEN_SCHEMA = "auto_open_identify_schema"
+        private const val PREF_AUTO_OPEN_URL = "auto_open_url"
         private const val PREF_AUTO_COPY_TEXT = "auto_copy_non_1922"
         private const val PREF_COPY_TEXT_VIBRATE = "vibrate_when_copy_text_success"
         // Wait a mount of time. If no 1922 number then trigger first QRCode

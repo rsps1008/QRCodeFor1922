@@ -15,6 +15,7 @@
     <string name="settings_copy_text">複製文字</string>
     <string name="settings_1922">掃描1922</string>
     <string name="try_open_other_schema">偵測網址、電子郵件或其他簡訊</string>
+    <string name="try_open_url_auto_automatic">偵測到網址後自動打開網頁</string>
     <string name="confirm_open_schema">請注意風險!你確定要使用其他app開啟這段內容?\n %s</string>
     <string name="detect_schema">偵測到非1922簡訊的跳轉內容</string>
     <string name="copy_to_clipboard">複製到剪貼簿</string>
