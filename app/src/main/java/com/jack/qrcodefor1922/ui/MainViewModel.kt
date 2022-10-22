@@ -1,5 +1,6 @@
 package com.jack.qrcodefor1922.ui
 
+import android.R
 import android.app.Application
 import android.content.*
 import android.net.Uri
@@ -8,9 +9,8 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
 import android.text.TextUtils
-import android.util.Log
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -112,7 +112,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startWithHttp(content: String): Boolean {
-        return (content.startsWith("http://") or content.startsWith("https://"))
+        return (content.startsWith("http://") or content.startsWith("https://") or content.startsWith("www"))
     }
 
     private fun triggerBarcode(barcode: Barcode) {
@@ -148,10 +148,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (mPref.getBoolean(PREF_AUTO_OPEN_SCHEMA, false)) {
                 synchronized(obj) {
                     if(mPref.getBoolean(PREF_AUTO_OPEN_URL, false) && startWithHttp(barcode.rawValue)) {
-                        Log.d("debugn",barcode.rawValue)
+                        //Log.d("debugn",barcode.rawValue)
                         val uri = Uri.parse(barcode.rawValue)
                         val intent = Intent(Intent.ACTION_VIEW, uri)
                         _startActivity.value = intent
+                        if (mPref.getBoolean(PREF_CLOSE_APP_AFTER_SCAN, false)) {
+                            _finishActivity.value = true
+                        }
                     }else{
                         val intent = Intent(Intent.ACTION_VIEW).apply {
                             data = Uri.parse(barcode.rawValue)
