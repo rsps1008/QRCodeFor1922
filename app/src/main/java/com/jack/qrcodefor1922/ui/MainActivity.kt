@@ -16,6 +16,7 @@ import android.util.Log
 import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -24,6 +25,9 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraControl
+import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -44,11 +48,29 @@ import java.util.concurrent.Executors
 typealias QRCodeListener = (barcodes: List<Barcode>) -> Unit
 
 class MainActivity : AppCompatActivity() {
+    private var camera: Camera? = null
+    private var cameraControl: CameraControl? = null
+    private var cameraInfo: CameraInfo? = null
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraExecutor: ExecutorService
 
     private val viewModel: MainViewModel by viewModels()
+    private val scaleGestureDetector by lazy {
+        ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                cameraControl?.let { control ->
+                    camera?.cameraInfo?.zoomState?.value?.let { zoomState ->
+                        val currentZoom = zoomState.zoomRatio
+                        val newZoom = currentZoom * detector.scaleFactor
+                        val clampedZoom = newZoom.coerceIn(zoomState.minZoomRatio, zoomState.maxZoomRatio)
+                        control.setZoomRatio(clampedZoom)
+                    }
+                }
+                return true
+            }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,6 +169,11 @@ class MainActivity : AppCompatActivity() {
                 builder.show()
             }
         }
+
+        binding.viewFinder.setOnTouchListener { _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            true
+        }
         viewModel.ready()
     }
 
@@ -233,18 +260,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCameraLock() {
-
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener(Runnable {
-            // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
             val imageAnalyzer = ImageAnalysis.Builder()
@@ -255,25 +279,26 @@ class MainActivity : AppCompatActivity() {
                     it.setAnalyzer(cameraExecutor, QRCodeAnalyzer(callback))
                 }
 
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
 
-                // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
+                // 修改這裡，移除局部變數，直接賦值給全域的 camera
+                camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageAnalyzer
                 )
+                cameraControl = camera?.cameraControl
+                cameraInfo = camera?.cameraInfo
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
 
         }, ContextCompat.getMainExecutor(this))
-
     }
+
+
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(

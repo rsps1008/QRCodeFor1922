@@ -3,6 +3,8 @@ package com.jack.qrcodefor1922.ui
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -49,12 +51,23 @@ class ScanResultRecyclerViewAdapter(
     override fun getItemCount(): Int = results.size
 
     inner class ViewHolder(binding: FragmentItemBinding) : RecyclerView.ViewHolder(binding.root),
-    View.OnLongClickListener {
+        View.OnLongClickListener {
         val typeView: ImageView = binding.type
         val timeStampView: TextView = binding.timestamp
         val contentView: TextView = binding.content
 
         init {
+            // 新增點擊事件判斷是否為網址
+            itemView.setOnClickListener {
+                val content = contentView.text.toString()
+                if (android.util.Patterns.WEB_URL.matcher(content).matches()) {
+                    val url = if (!content.startsWith("http://") && !content.startsWith("https://"))
+                        "http://$content" else content
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    itemView.context.startActivity(intent)
+                }
+            }
+            // 原本的長按複製功能
             itemView.setOnLongClickListener(this)
         }
 
@@ -70,11 +83,12 @@ class ScanResultRecyclerViewAdapter(
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(
                 p0.context,
-                String.format(p0.context.getString(R.string.copy_already), content),
+                String.format(p0.context.getString(com.jack.qrcodefor1922.R.string.copy_already), content),
                 Toast.LENGTH_SHORT
             ).show()
             return true
         }
     }
+
 
 }
