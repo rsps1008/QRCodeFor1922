@@ -15,7 +15,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.mlkit.vision.barcode.Barcode
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.rsps1008.qrcode.Utils.getDatabaseDao
 import com.rsps1008.qrcode.ui.MainActivity.Companion.PREFKEY
 import com.rsps1008.qrcode.ui.database.ScanResult
@@ -147,7 +147,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             if (mPref.getBoolean(PREF_AUTO_OPEN_SCHEMA, false)) {
                 synchronized(obj) {
-                    if(mPref.getBoolean(PREF_AUTO_OPEN_URL, false) && startWithHttp(barcode.rawValue)) {
+                    if(mPref.getBoolean(PREF_AUTO_OPEN_URL, false) && startWithHttp(barcode.rawValue ?: "")) {
                         //Log.d("debugn",barcode.rawValue)
                         val uri = Uri.parse(barcode.rawValue)
                         val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -169,12 +169,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             _showDetectOtherDialog.value = null
                             bRedirectDialogShowing = true
                         } else {
-                            copyToClipboard(barcode.rawValue)
+                            copyToClipboard(barcode.rawValue ?: "")
                         }}
                 }
                 saveResultToDb(barcode.rawValue, TYPE.REDIRECT)
             } else {
-                copyToClipboard(barcode.rawValue)
+                copyToClipboard(barcode.rawValue ?: "")
                 saveResultToDb(barcode.rawValue, TYPE.TEXT)
             }
         }
@@ -182,7 +182,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             mLastTriggerText = ""
             mHasTrigger = false
         }, 1500)
-        mLastTriggerText = barcode.rawValue
+        mLastTriggerText = barcode.rawValue ?: ""
         mHasTrigger = true
     }
 

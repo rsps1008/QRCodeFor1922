@@ -35,7 +35,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.mlkit.vision.barcode.Barcode
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.rsps1008.qrcode.QRCodeAnalyzer
 import com.rsps1008.qrcode.R
 import com.rsps1008.qrcode.SettingsPreference
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                 dialog.setNeutralButton(
                     getString(R.string.copy_to_clipboard)
                 ) { dialog, which ->
-                    viewModel.copyToClipboard(it.rawValue)
+                    viewModel.copyToClipboard(it.rawValue ?: "")
                 }
                 dialog.setNegativeButton(
                     android.R.string.cancel
