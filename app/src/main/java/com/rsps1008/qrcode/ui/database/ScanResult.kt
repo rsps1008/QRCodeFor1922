@@ -1,4 +1,4 @@
-package com.jack.qrcodefor1922.ui.database
+package com.rsps1008.qrcode.ui.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

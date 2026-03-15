@@ -1,11 +1,11 @@
-package com.jack.qrcodefor1922.ui.database
+package com.rsps1008.qrcode.ui.database
 
 import androidx.room.TypeConverter
 import java.util.*
 
 class Converters {
     @TypeConverter
-    fun fromTimestame(value: Long) : Date {
+    fun fromTimestamp(value: Long?) : Date? {
         return value?.let { Date(it) }
     }
 

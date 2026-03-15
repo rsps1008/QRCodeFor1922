@@ -1,4 +1,4 @@
-package com.jack.qrcodefor1922.ui
+package com.rsps1008.qrcode.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.jack.qrcodefor1922.R
+import com.rsps1008.qrcode.R
 
 
 /**

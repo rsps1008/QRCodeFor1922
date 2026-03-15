@@ -1,4 +1,4 @@
-package com.jack.qrcodefor1922.ui
+package com.rsps1008.qrcode.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -12,10 +12,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.jack.qrcodefor1922.R
-import com.jack.qrcodefor1922.databinding.FragmentItemBinding
-import com.jack.qrcodefor1922.ui.database.ScanResult
-import com.jack.qrcodefor1922.ui.database.TYPE
+import com.rsps1008.qrcode.R
+import com.rsps1008.qrcode.databinding.FragmentItemBinding
+import com.rsps1008.qrcode.ui.database.ScanResult
+import com.rsps1008.qrcode.ui.database.TYPE
 
 import java.text.SimpleDateFormat
 import java.util.*
@@ -83,7 +83,7 @@ class ScanResultRecyclerViewAdapter(
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(
                 p0.context,
-                String.format(p0.context.getString(com.jack.qrcodefor1922.R.string.copy_already), content),
+                String.format(p0.context.getString(com.rsps1008.qrcode.R.string.copy_already), content),
                 Toast.LENGTH_SHORT
             ).show()
             return true

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.jack.qrcodefor1922">
+    package="com.rsps1008.qrcode">
 
     <!--CameraX-->
     <uses-feature android:name="android.hardware.camera.any" />

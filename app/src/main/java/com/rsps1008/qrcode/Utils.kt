@@ -1,9 +1,9 @@
-package com.jack.qrcodefor1922
+package com.rsps1008.qrcode
 
 import android.content.Context
 import androidx.room.Room
-import com.jack.qrcodefor1922.ui.database.AppDatabase
-import com.jack.qrcodefor1922.ui.database.ScanResultDao
+import com.rsps1008.qrcode.ui.database.AppDatabase
+import com.rsps1008.qrcode.ui.database.ScanResultDao
 
 object Utils {
     private val DB_NAME: String = "qrcode1922.db"

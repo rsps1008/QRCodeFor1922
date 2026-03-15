@@ -1,4 +1,4 @@
-package com.jack.qrcodefor1922.ui
+package com.rsps1008.qrcode.ui
 
 import android.R
 import android.app.Application
@@ -16,10 +16,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.barcode.Barcode
-import com.jack.qrcodefor1922.Utils.getDatabaseDao
-import com.jack.qrcodefor1922.ui.MainActivity.Companion.PREFKEY
-import com.jack.qrcodefor1922.ui.database.ScanResult
-import com.jack.qrcodefor1922.ui.database.TYPE
+import com.rsps1008.qrcode.Utils.getDatabaseDao
+import com.rsps1008.qrcode.ui.MainActivity.Companion.PREFKEY
+import com.rsps1008.qrcode.ui.database.ScanResult
+import com.rsps1008.qrcode.ui.database.TYPE
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*

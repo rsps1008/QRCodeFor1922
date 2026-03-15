@@ -21,14 +21,6 @@
         app:title="@string/try_open_url_auto_automatic"/>
 
     <PreferenceCategory
-        android:title="@string/settings_1922"/>
-
-    <SwitchPreferenceCompat
-        android:key="vibrate_when_success"
-        android:defaultValue="true"
-        app:title="@string/vibrate_when_success"/>
-
-    <PreferenceCategory
         android:title="@string/settings_copy_text"/>
 
     <SwitchPreferenceCompat

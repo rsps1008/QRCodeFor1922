@@ -1,4 +1,4 @@
-package com.jack.qrcodefor1922.ui
+package com.rsps1008.qrcode.ui
 
 import android.Manifest
 import android.content.Context
@@ -36,11 +36,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.barcode.Barcode
-import com.jack.qrcodefor1922.QRCodeAnalyzer
-import com.jack.qrcodefor1922.R
-import com.jack.qrcodefor1922.SettingsPreference
-import com.jack.qrcodefor1922.databinding.ActivityMainBinding
-import kotlinx.android.synthetic.main.activity_main.*
+import com.rsps1008.qrcode.QRCodeAnalyzer
+import com.rsps1008.qrcode.R
+import com.rsps1008.qrcode.SettingsPreference
+import com.rsps1008.qrcode.databinding.ActivityMainBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

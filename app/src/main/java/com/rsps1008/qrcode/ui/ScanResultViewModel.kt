@@ -1,12 +1,12 @@
-package com.jack.qrcodefor1922.ui
+package com.rsps1008.qrcode.ui
 
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jack.qrcodefor1922.Utils
-import com.jack.qrcodefor1922.ui.database.ScanResult
+import com.rsps1008.qrcode.Utils
+import com.rsps1008.qrcode.ui.database.ScanResult
 import kotlinx.coroutines.launch
 import java.util.*
 

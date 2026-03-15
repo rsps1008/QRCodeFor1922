@@ -1,4 +1,4 @@
-package com.jack.qrcodefor1922
+package com.rsps1008.qrcode
 
 import android.annotation.SuppressLint
 import androidx.camera.core.ImageAnalysis
@@ -7,7 +7,7 @@ import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import com.jack.qrcodefor1922.ui.QRCodeListener
+import com.rsps1008.qrcode.ui.QRCodeListener
 
 class QRCodeAnalyzer(private val listener: QRCodeListener) : ImageAnalysis.Analyzer {
     private val options = BarcodeScannerOptions.Builder()

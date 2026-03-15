@@ -1,9 +1,9 @@
-package com.jack.qrcodefor1922
+package com.rsps1008.qrcode
 
 import android.os.Bundle
 import android.view.View
 import androidx.preference.PreferenceFragmentCompat
-import com.jack.qrcodefor1922.ui.MainActivity.Companion.PREFKEY
+import com.rsps1008.qrcode.ui.MainActivity.Companion.PREFKEY
 
 
 class SettingsPreference : PreferenceFragmentCompat() {
