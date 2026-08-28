@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.content.res.Configuration
 import android.util.Log
 import android.util.Size
 import android.view.Menu
@@ -16,6 +17,7 @@ import android.view.ScaleGestureDetector
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
@@ -65,6 +67,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val preferences = getSharedPreferences(PREFKEY, MODE_PRIVATE)
+        if (!preferences.contains(PREF_DARK_MODE)) {
+            val followsSystemTheme = (resources.configuration.uiMode
+                and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            preferences.edit().putBoolean(PREF_DARK_MODE, followsSystemTheme).apply()
+        }
+        val darkMode = preferences.getBoolean(PREF_DARK_MODE, false)
+        AppCompatDelegate.setDefaultNightMode(
+            if (darkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        )
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
@@ -368,6 +380,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val PREFKEY = "1922qrcode"
+        private const val PREF_DARK_MODE = "dark_mode"
         private const val TAG = "QRCodeScanner"
         private const val FRAGMENT_TAG_SETTINGS = "settings"
         private const val FRAGMENT_TAG_HISTORY = "history"

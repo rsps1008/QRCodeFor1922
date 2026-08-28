@@ -34,4 +34,5 @@ object Utils {
             database.execSQL("UPDATE scanresult SET type = 'SMS' WHERE type = 'SMS_1922'")
         }
     }
+
 }
