@@ -45,7 +45,14 @@ class ScanResultRecyclerViewAdapter(
         holder.typeView.setImageResource(imgId)
         holder.timeStampView.text =
             SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(item.timestamp)
-        holder.contentView.text = item.content
+        if (item.title.isNullOrBlank()) {
+            holder.titleView.visibility = View.GONE
+            holder.contentView.text = item.content
+        } else {
+            holder.titleView.visibility = View.VISIBLE
+            holder.titleView.text = item.title
+            holder.contentView.text = item.content
+        }
     }
 
     override fun getItemCount(): Int = results.size
@@ -53,6 +60,7 @@ class ScanResultRecyclerViewAdapter(
     inner class ViewHolder(binding: FragmentItemBinding) : RecyclerView.ViewHolder(binding.root),
         View.OnLongClickListener {
         val typeView: ImageView = binding.type
+        val titleView: TextView = binding.title
         val timeStampView: TextView = binding.timestamp
         val contentView: TextView = binding.content
 

@@ -1,12 +1,11 @@
 package com.rsps1008.qrcode.ui.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    version = 1,
+    version = 2,
     entities = [ScanResult::class],
     exportSchema = true
 )

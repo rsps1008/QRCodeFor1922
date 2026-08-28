@@ -331,7 +331,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.options_menu, menu)
-        return super.onCreateOptionsMenu(menu)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -362,7 +362,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        return super.onOptionsItemSelected(item)
+        return true
     }
 
     private val callback = object : QRCodeListener {

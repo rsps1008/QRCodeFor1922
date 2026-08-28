@@ -20,6 +20,12 @@
         android:defaultValue="false"
         app:title="@string/try_open_url_auto_automatic"/>
 
+    <SwitchPreferenceCompat
+        android:key="auto_add_wifi"
+        android:defaultValue="true"
+        app:title="@string/auto_add_wifi"
+        app:summary="@string/auto_add_wifi_summary"/>
+
     <PreferenceCategory
         android:title="@string/settings_copy_text"/>
 

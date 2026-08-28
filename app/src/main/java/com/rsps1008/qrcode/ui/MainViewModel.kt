@@ -21,7 +21,14 @@ import com.rsps1008.qrcode.ui.MainActivity.Companion.PREFKEY
 import com.rsps1008.qrcode.ui.database.ScanResult
 import com.rsps1008.qrcode.ui.database.TYPE
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.text.Html
+import android.net.wifi.WifiNetworkSuggestion
+import android.provider.Settings
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -145,16 +152,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
             saveResultToDb(barcode.sms?.message, TYPE.SMS_1922)
         } else {
-            if (mPref.getBoolean(PREF_AUTO_OPEN_SCHEMA, false)) {
+            if (barcode.valueType == Barcode.TYPE_WIFI
+                && mPref.getBoolean(PREF_AUTO_ADD_WIFI, true)
+            ) {
+                buildWifiSetupIntent(barcode)?.let { intent ->
+                    _startActivity.value = intent
+                } ?: copyToClipboard(barcode.rawValue ?: "")
+                saveResultToDb(barcode.rawValue, TYPE.TEXT)
+            } else if (mPref.getBoolean(PREF_AUTO_OPEN_SCHEMA, false)) {
                 synchronized(obj) {
                     if(mPref.getBoolean(PREF_AUTO_OPEN_URL, false) && startWithHttp(barcode.rawValue ?: "")) {
                         //Log.d("debugn",barcode.rawValue)
                         val uri = Uri.parse(barcode.rawValue)
                         val intent = Intent(Intent.ACTION_VIEW, uri)
                         _startActivity.value = intent
-                        if (mPref.getBoolean(PREF_CLOSE_APP_AFTER_SCAN, false)) {
-                            _finishActivity.value = true
-                        }
                     }else{
                         val intent = Intent(Intent.ACTION_VIEW).apply {
                             data = Uri.parse(barcode.rawValue)
@@ -172,7 +183,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             copyToClipboard(barcode.rawValue ?: "")
                         }}
                 }
-                saveResultToDb(barcode.rawValue, TYPE.REDIRECT)
+                saveResultToDb(
+                    barcode.rawValue,
+                    TYPE.REDIRECT,
+                    finishAfterTitle = mPref.getBoolean(PREF_CLOSE_APP_AFTER_SCAN, false)
+                        && mPref.getBoolean(PREF_AUTO_OPEN_URL, false)
+                        && startWithHttp(barcode.rawValue ?: "")
+                )
             } else {
                 copyToClipboard(barcode.rawValue ?: "")
                 saveResultToDb(barcode.rawValue, TYPE.TEXT)
@@ -241,6 +258,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _vibrate.value = null
     }
 
+    private fun buildWifiSetupIntent(barcode: Barcode): Intent? {
+        val wifi = barcode.wifi ?: return null
+        val ssid = wifi.ssid?.takeIf(String::isNotBlank) ?: return null
+        val suggestionBuilder = WifiNetworkSuggestion.Builder().setSsid(ssid)
+
+        when (wifi.encryptionType) {
+            Barcode.WiFi.TYPE_OPEN -> suggestionBuilder.setIsEnhancedOpen(false)
+            Barcode.WiFi.TYPE_WPA -> {
+                val password = wifi.password?.takeIf(String::isNotEmpty) ?: return null
+                suggestionBuilder.setWpa2Passphrase(password)
+            }
+            else -> return null
+        }
+
+        return Intent(Settings.ACTION_WIFI_ADD_NETWORKS).apply {
+            putParcelableArrayListExtra(
+                Settings.EXTRA_WIFI_NETWORK_LIST,
+                arrayListOf(suggestionBuilder.build())
+            )
+        }
+    }
+
     fun resetAgreement() {
         _showAgreement.value = null
     }
@@ -249,17 +288,55 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _startCamera.value = null
     }
 
-    fun saveResultToDb(rawValue: String?, type: TYPE) {
+    fun saveResultToDb(rawValue: String?, type: TYPE, finishAfterTitle: Boolean = false) {
         rawValue?.let {
-            saveResultToDbLocked(it, type)
+            saveResultToDbLocked(it, type, finishAfterTitle)
         }
     }
 
-    private fun saveResultToDbLocked(data: String, type: TYPE) {
+    private fun saveResultToDbLocked(data: String, type: TYPE, finishAfterTitle: Boolean) {
         val resultDao = getDatabaseDao(getApplication())
         viewModelScope.launch {
-            resultDao.insertAll(ScanResult(Date(), data, type))
+            val resultId = resultDao.insert(ScanResult(Date(), data, type))
+            if (startWithHttp(data)) {
+                fetchWebTitle(data)?.let { title ->
+                    resultDao.updateTitle(resultId, title)
+                }
+            }
+            if (finishAfterTitle) {
+                _finishActivity.value = true
+            }
         }
+    }
+
+    private suspend fun fetchWebTitle(rawUrl: String): String? = withContext(Dispatchers.IO) {
+        val normalizedUrl = if (rawUrl.startsWith("www", ignoreCase = true)) {
+            "https://$rawUrl"
+        } else {
+            rawUrl
+        }
+        runCatching {
+            val connection = (URL(normalizedUrl).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 5_000
+                readTimeout = 5_000
+                instanceFollowRedirects = true
+                requestMethod = "GET"
+                setRequestProperty("User-Agent", "Mozilla/5.0 QRCodeFor1922")
+            }
+            try {
+                if (connection.responseCode !in 200..399) return@runCatching null
+                val html = connection.inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                    reader.readText().take(MAX_HTML_SIZE)
+                }
+                TITLE_PATTERN.find(html)?.groupValues?.get(1)
+                    ?.let { Html.fromHtml(it, Html.FROM_HTML_MODE_LEGACY).toString() }
+                    ?.replace(WHITESPACE_PATTERN, " ")
+                    ?.trim()
+                    ?.takeIf(String::isNotEmpty)
+            } finally {
+                connection.disconnect()
+            }
+        }.getOrNull()
     }
 
     private class BgHandler(looper: Looper) : Handler(looper) {
@@ -285,12 +362,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private const val PREF_VIBRATE_WHEN_SUCCESS = "vibrate_when_success"
         private const val PREF_AUTO_OPEN_SCHEMA = "auto_open_identify_schema"
         private const val PREF_AUTO_OPEN_URL = "auto_open_url"
+        private const val PREF_AUTO_ADD_WIFI = "auto_add_wifi"
         private const val PREF_AUTO_COPY_TEXT = "auto_copy_non_1922"
         private const val PREF_COPY_TEXT_VIBRATE = "vibrate_when_copy_text_success"
         // Wait a mount of time. If no 1922 number then trigger first QRCode
         private const val MSG_FORCE_TRIGGER = 1
         // Time interval to trigger next QRCode
         private const val MSG_COOLING_TIME = 2
+        private const val MAX_HTML_SIZE = 512 * 1024
+        private val TITLE_PATTERN = Regex("<title[^>]*>(.*?)</title>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
+        private val WHITESPACE_PATTERN = Regex("\\s+")
         private val mForeTrigger = AtomicBoolean(false)
         private val obj = Object()
     }

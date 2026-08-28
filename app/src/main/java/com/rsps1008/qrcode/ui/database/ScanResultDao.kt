@@ -8,7 +8,10 @@ interface ScanResultDao {
     suspend fun getAll(): List<ScanResult>
 
     @Insert
-    suspend fun insertAll(vararg results: ScanResult)
+    suspend fun insert(result: ScanResult): Long
+
+    @Query("UPDATE scanresult SET title = :title WHERE id = :id")
+    suspend fun updateTitle(id: Long, title: String)
 
 
     @Delete

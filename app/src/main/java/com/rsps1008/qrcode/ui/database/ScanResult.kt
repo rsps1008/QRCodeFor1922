@@ -11,7 +11,8 @@ data class ScanResult (
     @PrimaryKey(autoGenerate = true) val id: Int,
     @ColumnInfo(defaultValue = "0") val timestamp: Date,
     @ColumnInfo val content: String,
-    @ColumnInfo val type: TYPE
+    @ColumnInfo val type: TYPE,
+    @ColumnInfo val title: String? = null
         ) {
-    constructor(date:Date, content: String, type: TYPE) : this(0, date, content, type)
+    constructor(date:Date, content: String, type: TYPE) : this(0, date, content, type, null)
 }
