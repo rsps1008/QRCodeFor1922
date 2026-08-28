@@ -2,27 +2,20 @@ package com.rsps1008.qrcode.ui
 
 import android.Manifest
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.text.InputFilter
-import android.text.InputType
 import android.util.Log
 import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ScaleGestureDetector
-import android.view.View
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
@@ -77,8 +70,18 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.findFragmentById(R.id.fragment_pref) != null) {
+                    returnToScanner()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
         cameraExecutor = Executors.newSingleThreadExecutor()
-        initAccompanyView()
         viewModel.showAgreement.observe(this) {
             it?.let {
                 if (it) {
@@ -95,9 +98,6 @@ class MainActivity : AppCompatActivity() {
             if (it == true) {
                 startCamera()
             }
-        }
-        viewModel.personNum.observe(this) {
-            binding.withFamilyView.text = it
         }
         viewModel.copyAlready.observe(this) {
             if (it.isNotEmpty()) {
@@ -129,10 +129,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.showDetectOtherDialog.observe(this) {
             it?.let {
                 val dialog = MaterialAlertDialogBuilder(this@MainActivity)
-                dialog.setTitle(getString(R.string.detect_schema))
+                dialog.setTitle(getString(R.string.detect_content))
                 dialog.setMessage(
                     String.format(
-                        getString(R.string.confirm_open_schema),
+                        getString(R.string.confirm_open_content),
                         it.rawValue
                     )
                 )
@@ -205,57 +205,6 @@ class MainActivity : AppCompatActivity() {
             )
         }
         viewModel.resetStartCamera()
-    }
-
-    private fun initAccompanyView() {
-        binding.withFamilyView.setOnClickListener {
-            showEnterNumberDialog()
-        }
-        binding.plusSign.setOnClickListener {
-            showEnterNumberDialog()
-        }
-        binding.withFamilyBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                viewModel.onSeekBarChange(progress)
-                binding.withFamilyView.text = progress.toString()
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-            }
-
-        })
-    }
-
-    /**
-     * Let user enter accompany number
-     */
-    private fun showEnterNumberDialog() {
-        val editText = EditText(this)
-        editText.inputType = InputType.TYPE_CLASS_NUMBER
-        // Limit input length
-        val filter = InputFilter.LengthFilter(2)
-        editText.filters = arrayOf(filter)
-
-        AlertDialog.Builder(this)
-            .setCancelable(false)
-            .setTitle(getString(R.string.enter_accompany_num))
-            .setView(editText)
-            .setPositiveButton(getString(R.string.dialog_confirm)) { _, _ ->
-                editText.let {
-                    viewModel.userEnterAccompanyNum(it.text.toString())
-                }
-            }.show()
-
-        // Keyboard not showing when dialog show. Trigger manually.
-        editText.postDelayed({
-            editText.requestFocus()
-            val input = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            input.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
-        }, 300)
-
     }
 
     private fun startCameraLock() {
@@ -336,21 +285,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            /*R.id.darkness -> {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse("https://github.com/asadman1523/QRCodeFor1922/releases/")
-                startActivity(intent)
-            }*/
             R.id.settings -> {
-                if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_SETTINGS) == null) {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.fragment_pref, SettingsPreference(), FRAGMENT_TAG_SETTINGS)
-                        .addToBackStack(FRAGMENT_TAG_SETTINGS)
-                        .commit()
-                    viewModel.isSettingsShowing(true)
-                    invalidateOptionsMenu()
-                }
+                showSettings()
             }
             R.id.history -> {
                 showHistory(showFavoritesOnly = false)
@@ -360,6 +296,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return true
+    }
+
+    private fun returnToScanner() {
+        supportFragmentManager.popBackStackImmediate(
+            null,
+            androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+        )
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_pref)
+        if (currentFragment != null) {
+            supportFragmentManager.beginTransaction().remove(currentFragment).commit()
+        }
+        viewModel.isSettingsShowing(false)
+        invalidateOptionsMenu()
     }
 
     private fun showHistory(showFavoritesOnly: Boolean) {
@@ -377,6 +326,20 @@ class MainActivity : AppCompatActivity() {
                 FRAGMENT_TAG_HISTORY
             )
             .addToBackStack(FRAGMENT_TAG_HISTORY)
+            .commit()
+        viewModel.isSettingsShowing(true)
+        invalidateOptionsMenu()
+    }
+
+    private fun showSettings() {
+        if (supportFragmentManager.findFragmentById(R.id.fragment_pref) is SettingsPreference) {
+            return
+        }
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_pref, SettingsPreference(), FRAGMENT_TAG_SETTINGS)
+            .addToBackStack(FRAGMENT_TAG_SETTINGS)
             .commit()
         viewModel.isSettingsShowing(true)
         invalidateOptionsMenu()
@@ -405,7 +368,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val PREFKEY = "1922qrcode"
-        private const val TAG = "QRCodeFor1922_new_api"
+        private const val TAG = "QRCodeScanner"
         private const val FRAGMENT_TAG_SETTINGS = "settings"
         private const val FRAGMENT_TAG_HISTORY = "history"
         private const val REQUEST_CODE_PERMISSIONS = 10

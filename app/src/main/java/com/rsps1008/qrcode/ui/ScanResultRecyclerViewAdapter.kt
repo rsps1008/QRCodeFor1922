@@ -40,9 +40,12 @@ class ScanResultRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = results[position]
         val imgId = when(item.type) {
-            TYPE.SMS_1922 -> R.drawable.baseline_sms
+            TYPE.SMS -> R.drawable.baseline_sms
             TYPE.TEXT -> R.drawable.baseline_abc
             TYPE.REDIRECT -> R.drawable.baseline_insert_link
+            TYPE.WIFI -> R.drawable.baseline_wifi
+            TYPE.PHONE -> R.drawable.baseline_phone
+            TYPE.EMAIL -> R.drawable.baseline_email
         }
         holder.typeView.setImageResource(imgId)
         holder.favoriteView.setImageResource(

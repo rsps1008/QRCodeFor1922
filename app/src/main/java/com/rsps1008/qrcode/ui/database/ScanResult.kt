@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.*
 
-enum class TYPE {SMS_1922, TEXT, REDIRECT}
+enum class TYPE {SMS, TEXT, REDIRECT, WIFI, PHONE, EMAIL}
 @Entity
 data class ScanResult (
     @PrimaryKey(autoGenerate = true) val id: Int,
