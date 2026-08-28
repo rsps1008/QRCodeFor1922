@@ -6,14 +6,21 @@
         android:id="@+id/history"
         android:icon="@drawable/ic_history"
         android:title="@string/setting_history"
-        android:orderInCategory="10"
+        android:orderInCategory="20"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_settings"
         android:title="@string/settings"
-        android:orderInCategory="20"
+        android:orderInCategory="30"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/show_favorites"
+        android:icon="@drawable/ic_star_border"
+        android:title="@string/show_favorites"
+        android:orderInCategory="10"
         app:showAsAction="always" />
 
 </menu>

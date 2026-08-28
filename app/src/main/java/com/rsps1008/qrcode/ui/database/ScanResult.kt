@@ -12,7 +12,8 @@ data class ScanResult (
     @ColumnInfo(defaultValue = "0") val timestamp: Date,
     @ColumnInfo val content: String,
     @ColumnInfo val type: TYPE,
-    @ColumnInfo val title: String? = null
+    @ColumnInfo val title: String? = null,
+    @ColumnInfo(defaultValue = "0") val isFavorite: Boolean = false
         ) {
-    constructor(date:Date, content: String, type: TYPE) : this(0, date, content, type, null)
+    constructor(date:Date, content: String, type: TYPE) : this(0, date, content, type, null, false)
 }

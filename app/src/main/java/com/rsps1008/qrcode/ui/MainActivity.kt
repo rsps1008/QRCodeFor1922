@@ -349,16 +349,33 @@ class MainActivity : AppCompatActivity() {
                         .addToBackStack(FRAGMENT_TAG_SETTINGS)
                         .commit()
                     viewModel.isSettingsShowing(true)
+                    invalidateOptionsMenu()
                 }
             }
             R.id.history -> {
                 if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_HISTORY) == null) {
                     supportFragmentManager
                         .beginTransaction()
-                        .replace(R.id.fragment_pref, ScanResultFragment(), FRAGMENT_TAG_HISTORY)
+                        .replace(R.id.fragment_pref, ScanResultFragment.newInstance(), FRAGMENT_TAG_HISTORY)
                         .addToBackStack(FRAGMENT_TAG_HISTORY)
                         .commit()
                     viewModel.isSettingsShowing(true)
+                    invalidateOptionsMenu()
+                }
+            }
+            R.id.show_favorites -> {
+                if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_HISTORY) == null) {
+                    supportFragmentManager
+                        .beginTransaction()
+                        .replace(
+                            R.id.fragment_pref,
+                            ScanResultFragment.newInstance(showFavoritesOnly = true),
+                            FRAGMENT_TAG_HISTORY
+                        )
+                        .addToBackStack(FRAGMENT_TAG_HISTORY)
+                        .commit()
+                    viewModel.isSettingsShowing(true)
+                    invalidateOptionsMenu()
                 }
             }
         }

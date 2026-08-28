@@ -12,14 +12,38 @@ import java.util.*
 
 class ScanResultViewModel: ViewModel() {
     val _resultData: MutableLiveData<List<ScanResult>> = MutableLiveData()
+    private var showFavoritesOnly = false
     val resultData: LiveData<List<ScanResult>>
         get() = _resultData
 
     fun getAllResult(applicationContext: Context) {
         viewModelScope.launch {
             val resultDao = Utils.getDatabaseDao(applicationContext)
-            _resultData.value = resultDao.getAll()
+            publishResults(resultDao.getAll())
         }
+    }
+
+    fun setShowFavoritesOnly(applicationContext: Context, showOnly: Boolean) {
+        showFavoritesOnly = showOnly
+        getAllResult(applicationContext)
+    }
+
+    fun deleteResult(applicationContext: Context, result: ScanResult) {
+        viewModelScope.launch {
+            Utils.getDatabaseDao(applicationContext).delete(result)
+            getAllResult(applicationContext)
+        }
+    }
+
+    fun toggleFavorite(applicationContext: Context, result: ScanResult) {
+        viewModelScope.launch {
+            Utils.getDatabaseDao(applicationContext).updateFavorite(result.id, !result.isFavorite)
+            getAllResult(applicationContext)
+        }
+    }
+
+    private fun publishResults(results: List<ScanResult>) {
+        _resultData.value = if (showFavoritesOnly) results.filter { it.isFavorite } else results
     }
 
 }

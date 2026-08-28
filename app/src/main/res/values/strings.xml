@@ -31,4 +31,9 @@
     <string name="setting_history">History</string>
     <string name="new_feature">New feature!</string>
     <string name="history_feature_mes">"You can check scan history now from menu at top right corner!"</string>
+    <string name="show_favorites">Show favorites</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+    <string name="delete_history_item">Delete</string>
+    <string name="no_favorites">No favorite records</string>
 </resources>
