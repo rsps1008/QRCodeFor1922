@@ -26,6 +26,8 @@ class ScanResultFragment : Fragment() {
     private val viewModel: ScanResultViewModel by viewModels()
     private var showFavoritesOnly = false
     private lateinit var historyAdapter: ScanResultRecyclerViewAdapter
+    val isShowingFavorites: Boolean
+        get() = showFavoritesOnly
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
