@@ -42,6 +42,14 @@ app/src/main/res/
 ├── values/                       # 英文、顏色、主題與尺寸
 ├── values-zh-rTW/                # 繁體中文文字
 └── values-night/                 # 深色主題顏色與主題
+
+docs/
+├── index.html                    # qrcode.rsps1008.ru 網站首頁
+├── privacy-policy/index.html     # 上架用隱私權政策頁
+├── license/index.html            # MIT／原始 Apache 授權說明頁
+├── styles.css                    # 網站共用樣式
+├── assets/qr-code-scanner-icon.png # 由 App launcher icon 複製的網站圖示
+└── CNAME                         # GitHub Pages 自訂網域
 ```
 
 ## 主要功能契約
@@ -116,6 +124,13 @@ app/src/main/res/
    ```
 
 6. 回報時區分「原始碼／資源檢查」、「`diff --check`」與「編譯／裝置實測」；沒有裝置實測時不可宣稱已完成實機驗證。
+
+### 網站與公開文件
+
+- 網站使用 `docs/` 靜態檔案，正式網域為 `https://qrcode.rsps1008.ru/`；`docs/CNAME` 由維護者自行管理。
+- 首頁、隱私權政策與授權頁必須使用 App icon，並維持目前專案 GitHub、原始專案 `asadman1523/QRCodeFor1922` 與 `Copyright (C) 2021 YuJhen` 的清楚歸屬說明。
+- 隱私權政策只能描述目前原始碼與 Manifest 可確認的資料處理；程式行為變更時，需同步檢查 `PrivacyPolicy.md` 與 `docs/privacy-policy/index.html`。
+- `LICENSE` 適用於本專案新增／修改部分；源自原始專案的程式碼仍須保留 `LICENSE-APACHE-2.0` 與原作者資訊。第三方元件列於 `THIRD_PARTY_LICENSES.md`。
 
 ## 常見注意事項
 
