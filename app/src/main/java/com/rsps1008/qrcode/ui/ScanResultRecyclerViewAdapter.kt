@@ -21,7 +21,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ScanResultRecyclerViewAdapter(
-    private val results: List<ScanResult>
+    private val results: MutableList<ScanResult>,
+    private val onDelete: (ScanResult) -> Unit,
+    private val onToggleFavorite: (ScanResult) -> Unit
 ) : RecyclerView.Adapter<ScanResultRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -43,6 +45,12 @@ class ScanResultRecyclerViewAdapter(
             TYPE.REDIRECT -> R.drawable.baseline_insert_link
         }
         holder.typeView.setImageResource(imgId)
+        holder.favoriteView.setImageResource(
+            if (item.isFavorite) R.drawable.ic_star else R.drawable.ic_star_border
+        )
+        holder.favoriteView.contentDescription = holder.itemView.context.getString(
+            if (item.isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites
+        )
         holder.timeStampView.text =
             SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(item.timestamp)
         if (item.title.isNullOrBlank()) {
@@ -61,10 +69,14 @@ class ScanResultRecyclerViewAdapter(
         View.OnLongClickListener {
         val typeView: ImageView = binding.type
         val titleView: TextView = binding.title
+        val favoriteView: ImageView = binding.favorite
         val timeStampView: TextView = binding.timestamp
         val contentView: TextView = binding.content
 
         init {
+            favoriteView.setOnClickListener {
+                onToggleFavorite(results[bindingAdapterPosition])
+            }
             // 新增點擊事件判斷是否為網址
             itemView.setOnClickListener {
                 val content = contentView.text.toString()
@@ -77,6 +89,15 @@ class ScanResultRecyclerViewAdapter(
             }
             // 原本的長按複製功能
             itemView.setOnLongClickListener(this)
+        }
+
+        fun remove() {
+            val position = bindingAdapterPosition
+            if (position != RecyclerView.NO_POSITION) {
+                val result = results.removeAt(position)
+                notifyItemRemoved(position)
+                onDelete(result)
+            }
         }
 
         override fun toString(): String {
