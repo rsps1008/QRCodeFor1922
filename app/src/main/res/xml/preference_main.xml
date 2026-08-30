@@ -11,28 +11,29 @@
         app:title="@string/closeWhenDetect"/>
 
     <SwitchPreferenceCompat
-        android:key="auto_open_identify_schema"
-        android:defaultValue="false"
-        app:title="@string/try_open_other_schema"/>
-
-    <SwitchPreferenceCompat
-        android:key="auto_open_url"
-        android:defaultValue="false"
-        app:title="@string/try_open_url_auto_automatic"/>
-
-    <SwitchPreferenceCompat
         android:key="auto_add_wifi"
         android:defaultValue="true"
         app:title="@string/auto_add_wifi"
         app:summary="@string/auto_add_wifi_summary"/>
 
+    <SwitchPreferenceCompat
+        android:key="auto_open_url"
+        android:defaultValue="false"
+        app:title="@string/auto_open_url" />
+
+    <SwitchPreferenceCompat
+        android:key="auto_open_actions"
+        android:defaultValue="false"
+        app:title="@string/auto_open_actions"
+        app:summary="@string/auto_open_actions_summary" />
+
     <PreferenceCategory
         android:title="@string/settings_copy_text"/>
 
     <SwitchPreferenceCompat
-        android:key="auto_copy_non_1922"
+        android:key="auto_copy_text"
         android:defaultValue="true"
-        app:title="@string/auto_copy_non_1922"/>
+        app:title="@string/auto_copy_text"/>
 
     <SwitchPreferenceCompat
         android:key="vibrate_when_copy_text_success"
