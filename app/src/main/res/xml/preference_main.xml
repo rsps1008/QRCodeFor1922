@@ -3,42 +3,65 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="@string/settings_normal"/>
+        android:title="@string/settings_scan"
+        app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
         android:key="close_after_scan"
         android:defaultValue="false"
-        app:title="@string/closeWhenDetect"/>
+        app:title="@string/closeWhenDetect"
+        app:summary="@string/closeWhenDetect_summary"
+        app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
         android:key="auto_add_wifi"
         android:defaultValue="true"
         app:title="@string/auto_add_wifi"
-        app:summary="@string/auto_add_wifi_summary"/>
+        app:summary="@string/auto_add_wifi_summary"
+        app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
         android:key="auto_open_url"
-        android:defaultValue="false"
-        app:title="@string/auto_open_url" />
+        android:defaultValue="true"
+        app:title="@string/auto_open_url"
+        app:summary="@string/auto_open_url_summary"
+        app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
         android:key="auto_open_actions"
-        android:defaultValue="false"
+        android:defaultValue="true"
         app:title="@string/auto_open_actions"
-        app:summary="@string/auto_open_actions_summary" />
+        app:summary="@string/auto_open_actions_summary"
+        app:iconSpaceReserved="false" />
 
     <PreferenceCategory
-        android:title="@string/settings_copy_text"/>
+        android:title="@string/settings_copy_text"
+        app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
         android:key="auto_copy_text"
         android:defaultValue="true"
-        app:title="@string/auto_copy_text"/>
+        app:title="@string/auto_copy_text"
+        app:summary="@string/auto_copy_text_summary"
+        app:iconSpaceReserved="false"/>
 
     <SwitchPreferenceCompat
         android:key="vibrate_when_copy_text_success"
         android:defaultValue="true"
-        app:title="@string/vibrate_when_copy_text_success"/>
+        app:title="@string/vibrate_when_copy_text_success"
+        app:summary="@string/vibrate_when_copy_text_success_summary"
+        app:iconSpaceReserved="false"/>
+
+    <PreferenceCategory
+        android:title="@string/settings_appearance"
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
+        android:key="dark_mode"
+        android:defaultValue="false"
+        app:title="@string/dark_mode"
+        app:summary="@string/dark_mode_summary"
+        app:iconSpaceReserved="false" />
 
 
 </PreferenceScreen>

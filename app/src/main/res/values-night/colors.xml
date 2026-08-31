@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="preference_bg_color">@color/black</color>
+    <color name="preference_bg_color">#121212</color>
+    <color name="history_item_background">#FF1E1B24</color>
+    <color name="history_item_stroke">#FF39313F</color>
+    <color name="history_icon_background">#FF30273D</color>
+    <color name="history_icon_tint">#FFD0BCFF</color>
+    <color name="favorite_tint">#FFFFD54F</color>
 </resources>

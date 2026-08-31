@@ -55,7 +55,6 @@ class ScanResultFragment : Fragment() {
                     )
                     this.adapter = historyAdapter
                 }
-                addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
                 ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
                     0,
                     ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
