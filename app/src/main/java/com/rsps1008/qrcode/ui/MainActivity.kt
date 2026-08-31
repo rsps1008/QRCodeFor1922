@@ -1,10 +1,8 @@
 package com.rsps1008.qrcode.ui
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -27,8 +25,13 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.rsps1008.qrcode.QRCodeAnalyzer
@@ -78,9 +81,21 @@ class MainActivity : AppCompatActivity() {
             if (darkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
         )
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fragmentPref) { fragmentContainer, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            fragmentContainer.setPadding(
+                fragmentContainer.paddingLeft,
+                systemBars.top,
+                fragmentContainer.paddingRight,
+                systemBars.bottom
+            )
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.fragmentPref)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -232,7 +247,16 @@ class MainActivity : AppCompatActivity() {
                 }
 
             val imageAnalyzer = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1024, 768))
+                .setResolutionSelector(
+                    ResolutionSelector.Builder()
+                        .setResolutionStrategy(
+                            ResolutionStrategy(
+                                Size(1024, 768),
+                                ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                            )
+                        )
+                        .build()
+                )
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
@@ -369,12 +393,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun vibrate() {
-        val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            v.vibrate(VIBRATE_PATTERN, -1)
-        }
+        val v = getSystemService(Vibrator::class.java)
+        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
         viewModel.resetVibrate()
     }
 
@@ -385,7 +405,6 @@ class MainActivity : AppCompatActivity() {
         private const val FRAGMENT_TAG_SETTINGS = "settings"
         private const val FRAGMENT_TAG_HISTORY = "history"
         private const val REQUEST_CODE_PERMISSIONS = 10
-        private val VIBRATE_PATTERN = longArrayOf(500, 500)
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 }

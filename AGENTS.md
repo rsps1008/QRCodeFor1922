@@ -85,6 +85,7 @@ docs/
 - 設定 XML 位於 `app/src/main/res/xml/preference_main.xml`。
 - 每個開關都必須同時有標題與簡短、使用者導向的摘要文字。
 - 英文 `values/strings.xml` 與繁體中文 `values-zh-rTW/strings.xml` 必須同步更新。
+- `MainActivity` 啟用 edge-to-edge；掃描預覽可延伸至系統列下方，但設定／歷史頁所在的 `fragment_pref` 必須套用狀態列與導覽列 Insets。
 - 首次啟動預設：開啟後關閉 APP 關閉；Wi-Fi、網址、SMS／電話／Email、文字複製、複製震動開啟。
 - 第一次啟動時依裝置當下的明亮／深色外觀初始化；之後由設定頁的深色模式保存並套用。
 - 設定頁、歷史頁、最愛頁與掃描主頁必須使用相同的主題狀態。

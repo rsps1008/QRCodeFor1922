@@ -105,4 +105,4 @@ lint/tmp/
 *.hprof
 .idea/
 
-app/release/output-metadata.json
+app/release/
