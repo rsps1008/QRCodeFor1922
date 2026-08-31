@@ -8,7 +8,7 @@
 
 - Android application module：`app`
 - Package／namespace：`com.rsps1008.qrcode`
-- `minSdk 30`、`targetSdk 34`、`compileSdk 34`
+- `minSdk 30`、`targetSdk 37`、`compileSdk 37`
 - Kotlin、AndroidX、Material Components、View Binding
 - CameraX 負責相機預覽與影像分析
 - Google ML Kit Barcode Scanning 負責條碼／QR Code 辨識

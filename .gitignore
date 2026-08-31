@@ -104,3 +104,5 @@ lint/tmp/
 # Android Profiling
 *.hprof
 .idea/
+
+app/release/output-metadata.json
