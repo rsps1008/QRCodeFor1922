@@ -42,6 +42,13 @@ class ScanResultViewModel: ViewModel() {
         }
     }
 
+    fun updateTitle(applicationContext: Context, result: ScanResult, title: String?) {
+        viewModelScope.launch {
+            Utils.getDatabaseDao(applicationContext).updateTitle(result.id.toLong(), title)
+            getAllResult(applicationContext)
+        }
+    }
+
     private fun publishResults(results: List<ScanResult>) {
         _resultData.value = if (showFavoritesOnly) results.filter { it.isFavorite } else results
     }

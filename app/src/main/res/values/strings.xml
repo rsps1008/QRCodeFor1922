@@ -32,6 +32,8 @@
     <string name="hint_permission_mes">You must allow all permissions to use the app.</string>
     <string name="nothing_happen">Redirect fail</string>
     <string name="setting_history">History</string>
+    <string name="edit_website_title">Edit website title</string>
+    <string name="website_title_hint">Enter a display name</string>
     <string name="show_favorites">Show favorites</string>
     <string name="add_to_favorites">Add to favorites</string>
     <string name="remove_from_favorites">Remove from favorites</string>

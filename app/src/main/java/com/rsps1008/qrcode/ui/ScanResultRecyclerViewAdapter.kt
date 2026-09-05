@@ -23,7 +23,8 @@ import java.util.*
 class ScanResultRecyclerViewAdapter(
     private val results: MutableList<ScanResult>,
     private val onDelete: (ScanResult) -> Unit,
-    private val onToggleFavorite: (ScanResult) -> Unit
+    private val onToggleFavorite: (ScanResult) -> Unit,
+    private val onRequestEditTitle: (ScanResult) -> Unit
 ) : RecyclerView.Adapter<ScanResultRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -54,6 +55,7 @@ class ScanResultRecyclerViewAdapter(
         holder.favoriteView.contentDescription = holder.itemView.context.getString(
             if (item.isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites
         )
+        holder.editTitleView.visibility = if (item.type == TYPE.REDIRECT) View.VISIBLE else View.GONE
         holder.timeStampView.text =
             SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(item.timestamp)
         if (item.title.isNullOrBlank()) {
@@ -72,6 +74,7 @@ class ScanResultRecyclerViewAdapter(
         View.OnLongClickListener {
         val typeView: ImageView = binding.type
         val titleView: TextView = binding.title
+        val editTitleView: ImageView = binding.editTitle
         val favoriteView: ImageView = binding.favorite
         val timeStampView: TextView = binding.timestamp
         val contentView: TextView = binding.content
@@ -79,6 +82,12 @@ class ScanResultRecyclerViewAdapter(
         init {
             favoriteView.setOnClickListener {
                 onToggleFavorite(results[bindingAdapterPosition])
+            }
+            editTitleView.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onRequestEditTitle(results[position])
+                }
             }
             // 新增點擊事件判斷是否為網址
             itemView.setOnClickListener {

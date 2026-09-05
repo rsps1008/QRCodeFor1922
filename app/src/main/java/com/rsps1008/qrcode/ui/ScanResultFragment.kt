@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.widget.EditText
+import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -14,7 +16,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rsps1008.qrcode.R
+import com.rsps1008.qrcode.ui.database.ScanResult
 
 
 /**
@@ -51,7 +55,8 @@ class ScanResultFragment : Fragment() {
                     historyAdapter = ScanResultRecyclerViewAdapter(
                         it.toMutableList(),
                         onDelete = { result -> viewModel.deleteResult(requireContext(), result) },
-                        onToggleFavorite = { result -> viewModel.toggleFavorite(requireContext(), result) }
+                        onToggleFavorite = { result -> viewModel.toggleFavorite(requireContext(), result) },
+                        onRequestEditTitle = ::showTitleEditor
                     )
                     this.adapter = historyAdapter
                 }
@@ -116,6 +121,38 @@ class ScanResultFragment : Fragment() {
             view.context.applicationContext,
             showFavoritesOnly
         )
+    }
+
+    private fun showTitleEditor(result: ScanResult) {
+        val input = EditText(requireContext()).apply {
+            setText(result.title.orEmpty())
+            hint = getString(R.string.website_title_hint)
+            setSingleLine()
+            selectAll()
+        }
+        val horizontalMargin = (24 * resources.displayMetrics.density).toInt()
+        val dialogContent = FrameLayout(requireContext()).apply {
+            setPadding(horizontalMargin, 0, horizontalMargin, 0)
+            addView(
+                input,
+                FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.edit_website_title)
+            .setView(dialogContent)
+            .setPositiveButton(R.string.dialog_confirm) { _, _ ->
+                viewModel.updateTitle(
+                    requireContext(),
+                    result,
+                    input.text.toString().trim().ifEmpty { null }
+                )
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     companion object {

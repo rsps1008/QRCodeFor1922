@@ -11,7 +11,7 @@ interface ScanResultDao {
     suspend fun insert(result: ScanResult): Long
 
     @Query("UPDATE scanresult SET title = :title WHERE id = :id")
-    suspend fun updateTitle(id: Long, title: String)
+    suspend fun updateTitle(id: Long, title: String?)
 
     @Query("UPDATE scanresult SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun updateFavorite(id: Int, isFavorite: Boolean)
