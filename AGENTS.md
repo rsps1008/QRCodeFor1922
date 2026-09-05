@@ -57,6 +57,7 @@ docs/
 ### 掃描與內容處理
 
 - `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；目前掃描主流程會處理辨識到的第一個 Barcode。
+- 掃描啟動時會檢查後鏡頭可用的 AE FPS 範圍；若有上限為 60 FPS 的範圍，Preview 與 ImageAnalysis 會共同請求該範圍，否則保留裝置預設幀率。
 - 純文字保存為 `TYPE.TEXT`，歷史頁使用 ABC 圖示。
 - 網址保存為 `TYPE.REDIRECT`，可取得網頁 `<title>`；標題抓取失敗時仍保留原始網址。
 - SMS、電話、Email、Wi-Fi 各自保存為獨立 `TYPE`，歷史頁使用對應圖示。

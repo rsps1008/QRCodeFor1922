@@ -3,11 +3,15 @@ package com.rsps1008.qrcode.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CaptureRequest
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.content.res.Configuration
 import android.util.Log
+import android.util.Range
 import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
@@ -24,6 +28,8 @@ import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
@@ -85,12 +91,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        val fragmentPaddingLeft = binding.fragmentPref.paddingLeft
+        val fragmentPaddingRight = binding.fragmentPref.paddingRight
         ViewCompat.setOnApplyWindowInsetsListener(binding.fragmentPref) { fragmentContainer, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             fragmentContainer.setPadding(
-                fragmentContainer.paddingLeft,
+                fragmentPaddingLeft,
                 systemBars.top,
-                fragmentContainer.paddingRight,
+                fragmentPaddingRight,
                 systemBars.bottom
             )
             insets
@@ -183,19 +191,6 @@ class MainActivity : AppCompatActivity() {
                 dialog.show()
             }
         }
-        viewModel.showHistoryPrompt.observe(this) {
-            if (it == true) {
-                val builder = AlertDialog.Builder(this).apply {
-                    setTitle(getString(R.string.new_feature))
-                    setMessage(getString(R.string.history_feature_mes))
-                    setPositiveButton(getText(R.string.dialog_confirm)
-                    ) { _, _ -> viewModel.confirmNewFeature() }
-                    setOnCancelListener { viewModel.confirmNewFeature() }
-                }
-                builder.show()
-            }
-        }
-
         binding.viewFinder.setOnTouchListener { _, event ->
             scaleGestureDetector.onTouchEvent(event)
             true
@@ -239,14 +234,23 @@ class MainActivity : AppCompatActivity() {
 
         cameraProviderFuture.addListener(Runnable {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val preferredFpsRange = findPreferred60FpsRange(cameraProvider, cameraSelector)
 
-            val preview = Preview.Builder()
+            val previewBuilder = Preview.Builder()
+            preferredFpsRange?.let { fpsRange ->
+                Camera2Interop.Extender(previewBuilder).setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+                    fpsRange
+                )
+            }
+            val preview = previewBuilder
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
-            val imageAnalyzer = ImageAnalysis.Builder()
+            val imageAnalysisBuilder = ImageAnalysis.Builder()
                 .setResolutionSelector(
                     ResolutionSelector.Builder()
                         .setResolutionStrategy(
@@ -258,12 +262,17 @@ class MainActivity : AppCompatActivity() {
                         .build()
                 )
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            preferredFpsRange?.let { fpsRange ->
+                Camera2Interop.Extender(imageAnalysisBuilder).setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+                    fpsRange
+                )
+            }
+            val imageAnalyzer = imageAnalysisBuilder
                 .build()
                 .also {
                     it.setAnalyzer(cameraExecutor, QRCodeAnalyzer(callback))
                 }
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 cameraProvider.unbindAll()
@@ -282,12 +291,40 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    private fun findPreferred60FpsRange(
+        cameraProvider: ProcessCameraProvider,
+        cameraSelector: CameraSelector
+    ): Range<Int>? {
+        val cameraInfo = cameraSelector.filter(cameraProvider.availableCameraInfos).firstOrNull()
+            ?: return null
+        val availableRanges = Camera2CameraInfo.from(cameraInfo).getCameraCharacteristic(
+            CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES
+        ) ?: return null
+        val preferredRange = availableRanges
+            .filter { it.upper == 60 }
+            .maxByOrNull { it.lower }
+
+        if (preferredRange == null) {
+            Log.i(TAG, "60 FPS is not supported by the selected back camera; using its default frame rate")
+        } else {
+            Log.i(TAG, "Using camera target FPS range $preferredRange")
+        }
+        return preferredRange
+    }
+
 
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        showFragmentBackground(
+            supportFragmentManager.findFragmentById(R.id.fragment_pref) != null
+        )
     }
 
     override fun onDestroy() {
@@ -343,6 +380,7 @@ class MainActivity : AppCompatActivity() {
         if (currentFragment != null) {
             supportFragmentManager.beginTransaction().remove(currentFragment).commit()
         }
+        showFragmentBackground(false)
         viewModel.isSettingsShowing(false)
         invalidateOptionsMenu()
     }
@@ -354,6 +392,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        showFragmentBackground(true)
         supportFragmentManager
             .beginTransaction()
             .replace(
@@ -372,6 +411,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        showFragmentBackground(true)
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_pref, SettingsPreference(), FRAGMENT_TAG_SETTINGS)
@@ -379,6 +419,12 @@ class MainActivity : AppCompatActivity() {
             .commit()
         viewModel.isSettingsShowing(true)
         invalidateOptionsMenu()
+    }
+
+    private fun showFragmentBackground(visible: Boolean) {
+        binding.fragmentPref.setBackgroundColor(
+            if (visible) getColor(R.color.preference_bg_color) else Color.TRANSPARENT
+        )
     }
 
     private val callback = object : QRCodeListener {

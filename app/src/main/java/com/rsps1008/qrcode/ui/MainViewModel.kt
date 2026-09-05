@@ -17,7 +17,6 @@ import com.rsps1008.qrcode.Utils.getDatabaseDao
 import com.rsps1008.qrcode.ui.MainActivity.Companion.PREFKEY
 import com.rsps1008.qrcode.ui.database.ScanResult
 import com.rsps1008.qrcode.ui.database.TYPE
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,7 +42,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _startActivity = MutableLiveData<Intent?>()
     private val _finishActivity = MutableLiveData<Boolean?>()
     private val _showDetectOtherDialog = MutableLiveData<Barcode?>()
-    private val _showHistoryPrompt = MutableLiveData<Boolean?>()
     private val _vibrate = MutableLiveData<Boolean?>()
     val showAgreement:LiveData<Boolean?> = _showAgreement
     val startCamera:LiveData<Boolean?> = _startCamera
@@ -51,7 +49,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val startActivity:LiveData<Intent?> = _startActivity
     val finishActivity:LiveData<Boolean?> = _finishActivity
     val showDetectOtherDialog:LiveData<Barcode?> = _showDetectOtherDialog
-    val showHistoryPrompt:LiveData<Boolean?> = _showHistoryPrompt
     val vibrate:LiveData<Boolean?>  = _vibrate
 
     private lateinit var mPref: SharedPreferences
@@ -67,27 +64,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun ready() {
         bAgreement = mPref.getBoolean(AGREEMENT, false)
-        val historyPrompt = mPref.getBoolean(FEATURE_HISTORY, false)
 
         if (!bAgreement) {
             _showAgreement.value = true
-        } else if (!historyPrompt)
-            viewModelScope.launch {
-                delay(1000)
-                _showHistoryPrompt.value = !historyPrompt
-            }
-        else {
+        } else {
             _startCamera.value = true
         }
     }
 
     fun userAgree() {
         mPref.edit().putBoolean(AGREEMENT, true).apply()
-        ready()
-    }
-
-    fun confirmNewFeature() {
-        mPref.edit().putBoolean(FEATURE_HISTORY, true).apply()
         ready()
     }
 
@@ -308,7 +294,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val AGREEMENT = "agreement"
-        private const val FEATURE_HISTORY = "feature_history"
         private const val PREF_CLOSE_APP_AFTER_SCAN = "close_after_scan"
         private const val PREF_AUTO_ADD_WIFI = "auto_add_wifi"
         private const val PREF_AUTO_OPEN_URL = "auto_open_url"
