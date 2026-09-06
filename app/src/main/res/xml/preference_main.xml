@@ -53,6 +53,33 @@
         app:iconSpaceReserved="false"/>
 
     <PreferenceCategory
+        android:title="@string/settings_backup"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        android:key="google_drive_account"
+        app:title="@string/google_drive_account"
+        app:summary="@string/google_drive_account_summary"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        android:key="google_drive_backup"
+        app:title="@string/google_drive_backup"
+        app:summary="@string/google_drive_backup_summary"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        android:key="google_drive_restore"
+        app:title="@string/google_drive_restore"
+        app:summary="@string/google_drive_restore_summary"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        android:key="google_drive_sign_out"
+        app:title="@string/google_drive_sign_out"
+        app:iconSpaceReserved="false" />
+
+    <PreferenceCategory
         android:title="@string/settings_appearance"
         app:iconSpaceReserved="false" />
 

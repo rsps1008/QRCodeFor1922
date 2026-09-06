@@ -8,6 +8,12 @@
 - 用途：在 Android App 中辨識 QR Code 與 Aztec 條碼
 - 服務條款：https://developers.google.com/ml-kit/terms
 
+## Google Sign-In and Drive API Client
+
+- 官方文件：https://developers.google.com/drive/api
+- 用途：以 Google OAuth 登入，並在使用者自己的 Drive `appDataFolder` 保存與還原掃描歷史備份
+- 授權：https://github.com/googleapis/google-api-java-client/blob/main/LICENSE
+
 ## AndroidX CameraX
 
 - 官方文件：https://developer.android.com/media/camera/camerax

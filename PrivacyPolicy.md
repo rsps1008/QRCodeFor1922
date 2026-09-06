@@ -1,6 +1,6 @@
 # QR Code Scanner 隱私權政策
 
-最後更新日期：2026 年 8 月 29 日
+最後更新日期：2026 年 9 月 6 日
 
 本政策適用於 QR Code Scanner Android 應用程式。網站版政策請參閱 <https://qrcode.rsps1008.ru/privacy-policy/>。
 
@@ -17,12 +17,15 @@
 - 掃描內容：辨識出的文字、網址、簡訊、電話、Email 或 Wi-Fi 內容會依功能保存於裝置本機的掃描歷史資料庫；你可以在 App 內刪除紀錄。
 - 設定資料：例如外觀、是否自動開啟內容、是否自動複製文字等，保存於裝置本機設定。
 - 剪貼簿：啟用自動複製或手動複製時，掃描內容會寫入 Android 系統剪貼簿。
+- Google Drive 備份：你在設定頁登入 Google 並執行備份時，歷史紀錄、網址標題、內容類型、時間與最愛狀態會保存到你自己 Google Drive 的 `appDataFolder`；還原會以該備份替換本機歷史。
 
 ## 網路連線
 
 掃描到網址時，應用程式可能在背景向該網址發出 HTTP/HTTPS 請求，以讀取頁面標題。該請求會由目標網站依其自身政策處理；應用程式不會把掃描歷史上傳至本維護者的伺服器。
 
-應用程式使用 Google ML Kit Barcode Scanning、AndroidX CameraX 與 AndroidX Room 等第三方元件。其使用方式與授權資訊列於[第三方授權清單](https://github.com/rsps1008/QRCodeFor1922/blob/main/THIRD_PARTY_LICENSES.md)。
+若你啟用 Google Drive 備份，App 會透過 Google OAuth 授權存取你帳戶的應用程式資料區；App 不會要求或使用 Google Drive 中其他檔案的讀寫權限。備份資料會保留在你的 Google 帳戶中，直到你自行刪除或覆蓋它。
+
+應用程式使用 Google ML Kit Barcode Scanning、Google Sign-In、Google Drive API、AndroidX CameraX 與 AndroidX Room 等第三方元件。其使用方式與授權資訊列於[第三方授權清單](https://github.com/rsps1008/QRCodeFor1922/blob/main/THIRD_PARTY_LICENSES.md)。
 
 ## 外部應用程式與系統功能
 

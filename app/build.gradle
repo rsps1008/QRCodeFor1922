@@ -11,8 +11,8 @@ android {
         applicationId "com.rsps1008.qrcode"
         minSdkVersion 30
         targetSdkVersion 37
-        versionCode 710
-        versionName "7.1.0"
+        versionCode 711
+        versionName "7.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,6 +29,16 @@ android {
     }
     buildFeatures {
         viewBinding = true
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += '/META-INF/INDEX.LIST'
+            excludes += '/META-INF/DEPENDENCIES'
+            excludes += '/META-INF/license.txt'
+            excludes += '/META-INF/license'
+            excludes += '/META-INF/dependencies'
+        }
     }
 }
 
@@ -75,5 +85,13 @@ dependencies {
 
     // optional - Test helpers
     testImplementation("androidx.room:room-testing:$roomVersion")
+
+    // Google Sign-In & Drive appDataFolder backup
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
+    implementation 'com.google.api-client:google-api-client:2.7.0'
+    implementation 'com.google.api-client:google-api-client-android:2.7.0'
+    implementation 'com.google.apis:google-api-services-drive:v3-rev20230822-2.0.0'
+    implementation 'com.google.http-client:google-http-client-gson:1.43.3'
+    implementation 'com.google.http-client:google-http-client-android:1.43.3'
 
 }

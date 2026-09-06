@@ -10,6 +10,20 @@ interface ScanResultDao {
     @Insert
     suspend fun insert(result: ScanResult): Long
 
+    @Insert
+    suspend fun insertAll(results: List<ScanResult>)
+
+    @Query("DELETE FROM scanresult")
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun replaceAll(results: List<ScanResult>) {
+        deleteAll()
+        // Backups are exported newest-first. Insert oldest-first so the generated
+        // IDs preserve the same history order after a restore.
+        insertAll(results.asReversed())
+    }
+
     @Query("UPDATE scanresult SET title = :title WHERE id = :id")
     suspend fun updateTitle(id: Long, title: String?)
 

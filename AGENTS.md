@@ -13,6 +13,7 @@
 - CameraX 負責相機預覽與影像分析
 - Google ML Kit Barcode Scanning 負責條碼／QR Code 辨識
 - Room 負責掃描歷史資料
+- Google Sign-In 與 Google Drive `appDataFolder` 負責歷史／最愛備份
 - Gradle Wrapper：以專案內 `gradlew.bat` 執行
 - Java source／target compatibility：17；目前建議使用相容的 JDK 21 執行 Gradle
 
@@ -21,8 +22,11 @@
 ```text
 app/src/main/java/com/rsps1008/qrcode/
 ├── QRCodeAnalyzer.kt             # CameraX ImageAnalysis 與 ML Kit 辨識
-├── SettingsPreference.kt         # 設定頁與主題切換
+├── SettingsPreference.kt         # 設定頁、主題切換與 Google Drive 備份／還原
 ├── Utils.kt                      # Room database 建立與 migration 註冊
+├── backup/
+│   ├── GoogleDriveService.kt     # Google Drive appDataFolder 檔案上傳／下載
+│   └── ScanResultBackup.kt        # 歷史與最愛狀態的版本化 JSON
 └── ui/
     ├── MainActivity.kt           # 掃描主頁、ActionBar、權限、外部 Intent
     ├── MainViewModel.kt           # 掃描去重、類型分流、設定行為、網站標題抓取
@@ -81,6 +85,8 @@ docs/
 - 網址歷史卡片在星號左側顯示鉛筆，可編輯保存的網站標題；清空標題時儲存為 `null` 並改為只顯示原始網址。
 - 歷史卡片支援左右滑動；滑動時先顯示移除背景與文字，完成滑動後才刪除資料。
 - 系統返回鍵、設定頁、歷史頁與最愛頁都應返回掃描主頁。
+- 設定頁可登入 Google，將歷史與最愛狀態保存為 `qrcode_scanner_history.json` 至 Drive `appDataFolder`。
+- Google Drive 還原必須先經使用者確認，並以 Room transaction 替換本機歷史；備份包含標題、類型、時間與最愛狀態，不依賴本機自動遞增 ID。
 
 ### 設定與主題
 
@@ -91,6 +97,7 @@ docs/
 - 首次啟動預設：開啟後關閉 APP 關閉；Wi-Fi、網址、SMS／電話／Email、文字複製、複製震動開啟。
 - 第一次啟動時依裝置當下的明亮／深色外觀初始化；之後由設定頁的深色模式保存並套用。
 - 設定頁、歷史頁、最愛頁與掃描主頁必須使用相同的主題狀態。
+- Google Drive 功能使用 `DriveScopes.DRIVE_APPDATA`；沒有登入或未授予該 scope 時，備份／還原選項必須停用。
 
 ## 資料庫規則
 
@@ -99,6 +106,7 @@ docs/
 - 新安裝不需要為不存在的舊資料增加修正 migration；若使用者明確要求全新安裝，可移除未必要的資料清理 migration，但不能破壞目前欄位 migration。
 - 既有使用者資料庫名稱與 SharedPreferences key 可能仍帶有舊產品識別字，除非另有完整搬遷計畫，不要任意改名。
 - 任何資料庫變更都要產生對應 `app/schemas/.../N.json`，並驗證 build。
+- `ScanResultDao.replaceAll()` 的清空與批次插入必須維持在同一個 Room transaction 內。
 
 ## 自動學習與 AGENTS.md 維護
 
@@ -140,6 +148,7 @@ docs/
 - Android Studio 的 Gradle JVM 必須使用 Gradle 8.14.5 支援的版本；本專案目前使用 JDK 21。
 - `AndroidManifest.xml` 已宣告相機、網路、Wi-Fi 狀態／變更與震動權限；新增權限前先確認是否真的需要。
 - 網路抓取只能在背景執行緒／coroutine 進行，並設定合理 timeout。
+- Google Drive 上傳／下載只能在背景 coroutine 執行；App 僅存取自己的 `appDataFolder`，不要求完整 Drive 檔案權限。
 - Intent 開啟前要確認系統存在可處理的 Activity；無法處理時應保留內容並依設定複製或顯示備援。
 - 不要把一般文字誤存成 `REDIRECT`；只有 ML Kit URL 類型或明確網址格式才使用連結類型。
 - 不要為了美化歷史頁移除星號的可點擊區域、網址備援或左右滑除的移除過渡效果。
