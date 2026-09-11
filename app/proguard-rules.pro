@@ -15,6 +15,10 @@
 -keep class com.google.android.gms.internal.mlkit_vision_barcode.** { *; }
 -keep class com.google.android.gms.internal.mlkit_vision_barcode_bundled.** { *; }
 
+# Google Drive API models are parsed through reflection. Keep their fields and
+# accessors so Release R8 shrinking does not cause "key error" at runtime.
+-keep class com.google.api.services.drive.** { *; }
+
 # Optional Apache HTTP authentication integrations are not included on Android.
 -dontwarn org.apache.http.**
 -dontwarn javax.naming.**
