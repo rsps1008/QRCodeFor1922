@@ -8,6 +8,12 @@
 # Keep R8 shrinking enabled while preserving class and member names.
 -dontobfuscate
 
+# Google API client reads generic types and @Key fields through reflection.
+-keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
+-keepclassmembers class * {
+    @com.google.api.client.util.Key <fields>;
+}
+
 # ML Kit BarcodeScanning accesses parts of its implementation indirectly. The
 # bundled consumer rules keep generated proto fields, but R8 full mode can
 # still remove implementation classes required by BarcodeScanning.getClient().
