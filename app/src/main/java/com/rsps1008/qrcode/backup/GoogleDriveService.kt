@@ -53,9 +53,13 @@ class GoogleDriveService(context: Context, account: GoogleSignInAccount) {
                     name = fileName
                     parents = listOf("appDataFolder")
                 }
-                drive.files().create(metadata, mediaContent).execute()
+                drive.files().create(metadata, mediaContent)
+                    .setFields("id")
+                    .execute()
             } else {
-                drive.files().update(fileList.files.first().id, null, mediaContent).execute()
+                drive.files().update(fileList.files.first().id, null, mediaContent)
+                    .setFields("id")
+                    .execute()
             }
             Result.success(Unit)
         } catch (e: Exception) {

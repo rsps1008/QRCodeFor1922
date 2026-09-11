@@ -3,6 +3,7 @@ package com.rsps1008.qrcode
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -253,6 +254,7 @@ class SettingsPreference : PreferenceFragmentCompat() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                Log.e(TAG, "Google Drive operation failed", e)
                 val message = e.message ?: e.javaClass.simpleName
                 showMessage(getString(failureMessageRes, message))
             } finally {
@@ -281,5 +283,9 @@ class SettingsPreference : PreferenceFragmentCompat() {
 
     private fun showMessage(message: String) {
         if (isAdded) Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
+
+    private companion object {
+        const val TAG = "SettingsPreference"
     }
 }
