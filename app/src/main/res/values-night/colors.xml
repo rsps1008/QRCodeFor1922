@@ -6,4 +6,6 @@
     <color name="history_icon_background">#FF0D2A36</color>
     <color name="history_icon_tint">#FF81D4FA</color>
     <color name="favorite_tint">#FFFFD54F</color>
+    <color name="menu_icon_selected">#FFFFFFFF</color>
+    <color name="menu_icon_unselected">#99FFFFFF</color>
 </resources>

@@ -35,9 +35,11 @@ import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.appcompat.content.res.AppCompatResources
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.rsps1008.qrcode.QRCodeAnalyzer
@@ -102,6 +104,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        supportFragmentManager.addOnBackStackChangedListener {
+            invalidateOptionsMenu()
+        }
         val fragmentPaddingLeft = binding.fragmentPref.paddingLeft
         val fragmentPaddingRight = binding.fragmentPref.paddingRight
         ViewCompat.setOnApplyWindowInsetsListener(binding.fragmentPref) { fragmentContainer, insets ->
@@ -340,6 +345,47 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val selectedItemId = when (val fragment =
+            supportFragmentManager.findFragmentById(R.id.fragment_pref)) {
+            is SettingsPreference -> R.id.settings
+            is ScanResultFragment -> if (fragment.isShowingFavorites) {
+                R.id.show_favorites
+            } else {
+                R.id.history
+            }
+            else -> null
+        }
+
+        listOf(
+            Triple(R.id.show_favorites, R.drawable.ic_star_border, R.drawable.ic_star),
+            Triple(R.id.history, R.drawable.ic_history, R.drawable.ic_history),
+            Triple(R.id.settings, R.drawable.ic_settings, R.drawable.ic_settings)
+        ).forEach { (itemId, defaultIcon, selectedIcon) ->
+            val isSelected = itemId == selectedItemId
+            menu.findItem(itemId)?.apply {
+                isChecked = isSelected
+                icon = AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (isSelected) selectedIcon else defaultIcon
+                )?.mutate()?.also { drawable ->
+                    DrawableCompat.setTint(
+                        drawable,
+                        ContextCompat.getColor(
+                            this@MainActivity,
+                            if (isSelected) {
+                                R.color.menu_icon_selected
+                            } else {
+                                R.color.menu_icon_unselected
+                            }
+                        )
+                    )
+                }
+            }
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.settings -> {
@@ -387,7 +433,6 @@ class MainActivity : AppCompatActivity() {
             .addToBackStack(FRAGMENT_TAG_HISTORY)
             .commit()
         viewModel.isSettingsShowing(true)
-        invalidateOptionsMenu()
     }
 
     private fun showSettings() {
@@ -402,7 +447,6 @@ class MainActivity : AppCompatActivity() {
             .addToBackStack(FRAGMENT_TAG_SETTINGS)
             .commit()
         viewModel.isSettingsShowing(true)
-        invalidateOptionsMenu()
     }
 
     private fun showFragmentBackground(visible: Boolean) {

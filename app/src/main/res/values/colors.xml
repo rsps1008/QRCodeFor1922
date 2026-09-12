@@ -14,4 +14,6 @@
     <color name="history_icon_background">#FFE1F5FE</color>
     <color name="history_icon_tint">#FF0277BD</color>
     <color name="favorite_tint">#FFF2B01E</color>
+    <color name="menu_icon_selected">#FFFFFFFF</color>
+    <color name="menu_icon_unselected">#D9FFFFFF</color>
 </resources>
