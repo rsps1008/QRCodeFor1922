@@ -77,12 +77,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val preferences = getSharedPreferences(PREFKEY, MODE_PRIVATE)
-        if (!preferences.contains(PREF_DARK_MODE)) {
-            val followsSystemTheme = (resources.configuration.uiMode
+        val storedAppearance = preferences.all[PREF_DARK_MODE]
+        val appearance = when (storedAppearance) {
+            is String -> storedAppearance
+            is Boolean -> if (storedAppearance) APPEARANCE_DARK else APPEARANCE_LIGHT
+            else -> {
+                val followsSystemTheme = (resources.configuration.uiMode
                 and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-            preferences.edit().putBoolean(PREF_DARK_MODE, followsSystemTheme).apply()
+                if (followsSystemTheme) APPEARANCE_DARK else APPEARANCE_LIGHT
+            }
         }
-        val darkMode = preferences.getBoolean(PREF_DARK_MODE, false)
+        if (storedAppearance !is String || storedAppearance != appearance) {
+            preferences.edit().putString(
+                PREF_DARK_MODE,
+                appearance
+            ).apply()
+        }
+        val darkMode = appearance == APPEARANCE_DARK
         AppCompatDelegate.setDefaultNightMode(
             if (darkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
         )
@@ -117,13 +128,6 @@ class MainActivity : AppCompatActivity() {
         })
 
         cameraExecutor = Executors.newSingleThreadExecutor()
-        viewModel.showAgreement.observe(this) {
-            it?.let {
-                if (it) {
-                    showAgreementDialog()
-                }
-            }
-        }
         viewModel.vibrate.observe(this) {
             if (it == true) {
                 vibrate()
@@ -196,26 +200,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
         viewModel.ready()
-    }
-
-    private fun showAgreementDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setCancelable(false)
-            .setTitle(getString(R.string.claim_title))
-            .setMessage(getString(R.string.claim_mes))
-            .setPositiveButton(
-                getString(R.string.agree)
-            ) { _, _ ->
-                viewModel.userAgree()
-                viewModel.resetAgreement()
-            }
-            .setNegativeButton(
-                getString(R.string.not_agree)
-            ) { _, _ ->
-                viewModel.resetAgreement()
-                finish()
-            }
-            .show()
     }
 
     private fun startCamera() {
@@ -447,6 +431,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val PREFKEY = "1922qrcode"
         private const val PREF_DARK_MODE = "dark_mode"
+        private const val APPEARANCE_LIGHT = "light"
+        private const val APPEARANCE_DARK = "dark"
         private const val TAG = "QRCodeScanner"
         private const val FRAGMENT_TAG_SETTINGS = "settings"
         private const val FRAGMENT_TAG_HISTORY = "history"

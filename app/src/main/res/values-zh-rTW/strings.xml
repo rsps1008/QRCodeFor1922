@@ -1,18 +1,20 @@
 <resources>
     <string name="app_name">QR code 掃描器</string>
     <string name="copy_already">"已複製文字\n%s"</string>
-    <string name="claim_title">"免責聲明"</string>
-    <string name="claim_mes">"使用此App造成任何損失，開發者概不負責。\n同意請點同意。"</string>
-    <string name="agree">"同意"</string>
-    <string name="not_agree">"離開"</string>
     <string name="closeWhenDetect">開啟後關閉 APP</string>
     <string name="closeWhenDetect_summary">完成開啟後，自動關閉 APP</string>
     <string name="settings">設定</string>
     <string name="settings_normal">一般設定</string>
     <string name="settings_scan">掃描後的動作</string>
-    <string name="dark_mode">深色外觀</string>
-    <string name="dark_mode_summary">選擇明亮或深色的畫面</string>
+    <string name="dark_mode">外觀</string>
+    <string name="dark_mode_summary">選擇明亮或深色外觀</string>
+    <string name="appearance_light">明亮</string>
+    <string name="appearance_dark">深色</string>
     <string name="settings_appearance">外觀</string>
+    <string name="settings_about">關於</string>
+    <string name="app_version">目前版本</string>
+    <string name="privacy_policy">隱私權政策</string>
+    <string name="privacy_policy_unavailable">找不到可以開啟隱私權政策的瀏覽器</string>
     <string name="settings_copy_text">文字處理</string>
     <string name="auto_add_wifi">掃描 Wi-Fi 後自動連線</string>
     <string name="auto_add_wifi_summary">透過系統自動儲存 Wi-Fi 帳號密碼</string>
@@ -36,7 +38,7 @@
     <string name="google_drive_restore_summary">以 Google Drive 備份替換本機歷史紀錄</string>
     <string name="google_drive_sign_out">登出 Google Drive</string>
     <string name="google_drive_not_signed_in">尚未登入 Google Drive</string>
-    <string name="google_drive_last_backup">最後備份：%s</string>
+    <string name="google_drive_last_backup">最後備份：%1$s\n%2$s</string>
     <string name="google_drive_backup_success">Google Drive 備份完成</string>
     <string name="google_drive_restore_success">Google Drive 還原完成（%d 筆）</string>
     <string name="google_drive_backup_failed">Google Drive 備份失敗：%s</string>

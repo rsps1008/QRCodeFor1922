@@ -31,19 +31,16 @@ import java.util.*
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var mLastTriggerText: String = ""
     private var mHasTrigger = false
-    private var bAgreement = false
     private var bRedirectDialogShowing = false
     private var bSettingsShow = false
     private var mTempIntent: Intent? = null
 
-    private val _showAgreement = MutableLiveData<Boolean?>()
     private val _startCamera = MutableLiveData<Boolean?>()
     private val _copyAlready = MutableLiveData<String>()
     private val _startActivity = MutableLiveData<Intent?>()
     private val _finishActivity = MutableLiveData<Boolean?>()
     private val _showDetectOtherDialog = MutableLiveData<Barcode?>()
     private val _vibrate = MutableLiveData<Boolean?>()
-    val showAgreement:LiveData<Boolean?> = _showAgreement
     val startCamera:LiveData<Boolean?> = _startCamera
     val copyAlready:LiveData<String> = _copyAlready
     val startActivity:LiveData<Intent?> = _startActivity
@@ -63,18 +60,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun ready() {
-        bAgreement = mPref.getBoolean(AGREEMENT, false)
-
-        if (!bAgreement) {
-            _showAgreement.value = true
-        } else {
-            _startCamera.value = true
-        }
-    }
-
-    fun userAgree() {
-        mPref.edit().putBoolean(AGREEMENT, true).apply()
-        ready()
+        _startCamera.value = true
     }
 
     fun startWithHttp(content: String): Boolean {
@@ -233,10 +219,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun resetAgreement() {
-        _showAgreement.value = null
-    }
-
     fun resetStartCamera() {
         _startCamera.value = null
     }
@@ -293,7 +275,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        private const val AGREEMENT = "agreement"
         private const val PREF_CLOSE_APP_AFTER_SCAN = "close_after_scan"
         private const val PREF_AUTO_ADD_WIFI = "auto_add_wifi"
         private const val PREF_AUTO_OPEN_URL = "auto_open_url"

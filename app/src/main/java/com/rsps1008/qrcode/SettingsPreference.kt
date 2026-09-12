@@ -2,6 +2,7 @@ package com.rsps1008.qrcode
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,7 +13,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
+import androidx.preference.ListPreference
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -36,6 +37,8 @@ class SettingsPreference : PreferenceFragmentCompat() {
     private lateinit var googleDriveBackupPreference: Preference
     private lateinit var googleDriveRestorePreference: Preference
     private lateinit var googleDriveSignOutPreference: Preference
+    private lateinit var appVersionPreference: Preference
+    private lateinit var privacyPolicyPreference: Preference
 
     private var googleSignInAccount: GoogleSignInAccount? = null
     private var googleDriveSignInClient: com.google.android.gms.auth.api.signin.GoogleSignInClient? = null
@@ -55,6 +58,7 @@ class SettingsPreference : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.sharedPreferencesName = PREFKEY
+        migrateAppearancePreference()
         setPreferencesFromResource(R.xml.preference_main, rootKey)
 
         googleDriveAccountPreference = findPreference("google_drive_account")
@@ -65,6 +69,26 @@ class SettingsPreference : PreferenceFragmentCompat() {
             ?: error("Missing Google Drive restore preference")
         googleDriveSignOutPreference = findPreference("google_drive_sign_out")
             ?: error("Missing Google Drive sign-out preference")
+        appVersionPreference = findPreference("app_version")
+            ?: error("Missing app version preference")
+        privacyPolicyPreference = findPreference("privacy_policy")
+            ?: error("Missing privacy policy preference")
+
+        appVersionPreference.summary = requireContext().packageManager
+            .getPackageInfo(requireContext().packageName, 0)
+            .versionName
+        privacyPolicyPreference.setOnPreferenceClickListener {
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse(PRIVACY_POLICY_URL)
+            )
+            if (intent.resolveActivity(requireContext().packageManager) != null) {
+                startActivity(intent)
+            } else {
+                showMessage(getString(R.string.privacy_policy_unavailable))
+            }
+            true
+        }
 
         val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
@@ -93,9 +117,9 @@ class SettingsPreference : PreferenceFragmentCompat() {
             true
         }
 
-        findPreference<SwitchPreferenceCompat>("dark_mode")?.setOnPreferenceChangeListener { _, value ->
+        findPreference<ListPreference>("dark_mode")?.setOnPreferenceChangeListener { _, value ->
             AppCompatDelegate.setDefaultNightMode(
-                if (value == true) AppCompatDelegate.MODE_NIGHT_YES
+                if (value == "dark") AppCompatDelegate.MODE_NIGHT_YES
                 else AppCompatDelegate.MODE_NIGHT_NO
             )
             true
@@ -272,7 +296,7 @@ class SettingsPreference : PreferenceFragmentCompat() {
             val lastBackup = lastBackupAtMillis?.let {
                 DateFormat.getDateTimeInstance().format(Date(it))
             } ?: getString(R.string.google_drive_time_unknown)
-            getString(R.string.google_drive_last_backup, "$account；$lastBackup")
+            getString(R.string.google_drive_last_backup, account, lastBackup)
         } else {
             getString(R.string.google_drive_not_signed_in)
         }
@@ -285,7 +309,17 @@ class SettingsPreference : PreferenceFragmentCompat() {
         if (isAdded) Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
+    private fun migrateAppearancePreference() {
+        val preferences = requireContext().getSharedPreferences(PREFKEY, Activity.MODE_PRIVATE)
+        when (val value = preferences.all["dark_mode"]) {
+            is Boolean -> preferences.edit()
+                .putString("dark_mode", if (value) "dark" else "light")
+                .apply()
+        }
+    }
+
     private companion object {
         const val TAG = "SettingsPreference"
+        const val PRIVACY_POLICY_URL = "https://qrcode.rsps1008.ru/privacy-policy/"
     }
 }
