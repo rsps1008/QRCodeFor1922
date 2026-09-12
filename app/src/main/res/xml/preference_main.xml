@@ -103,7 +103,7 @@
 
     <Preference
         android:key="app_version"
-        app:title="@string/app_version"
+        app:layout="@layout/preference_current_version"
         app:selectable="false"
         app:iconSpaceReserved="false" />
 

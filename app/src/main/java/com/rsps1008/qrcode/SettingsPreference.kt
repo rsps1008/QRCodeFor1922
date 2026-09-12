@@ -74,9 +74,12 @@ class SettingsPreference : PreferenceFragmentCompat() {
         privacyPolicyPreference = findPreference("privacy_policy")
             ?: error("Missing privacy policy preference")
 
-        appVersionPreference.summary = requireContext().packageManager
-            .getPackageInfo(requireContext().packageName, 0)
-            .versionName
+        appVersionPreference.summary = getString(
+            R.string.app_version,
+            requireContext().packageManager
+                .getPackageInfo(requireContext().packageName, 0)
+                .versionName
+        )
         privacyPolicyPreference.setOnPreferenceClickListener {
             val intent = Intent(
                 Intent.ACTION_VIEW,

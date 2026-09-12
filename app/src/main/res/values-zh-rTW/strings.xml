@@ -12,7 +12,7 @@
     <string name="appearance_dark">深色</string>
     <string name="settings_appearance">外觀</string>
     <string name="settings_about">關於</string>
-    <string name="app_version">目前版本</string>
+    <string name="app_version">目前版本 %1$s</string>
     <string name="privacy_policy">隱私權政策</string>
     <string name="privacy_policy_unavailable">找不到可以開啟隱私權政策的瀏覽器</string>
     <string name="settings_copy_text">文字處理</string>
