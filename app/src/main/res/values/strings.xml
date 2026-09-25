@@ -69,4 +69,5 @@
     <string name="scan_from_image">Scan from image</string>
     <string name="scan_image_no_code">No QR code found in this image</string>
     <string name="scan_image_failed">Unable to scan this image</string>
+    <string name="scan_image_unreadable_content">Unable to recognize the main QR code content</string>
 </resources>

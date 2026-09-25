@@ -258,7 +258,33 @@ class MainActivity : AppCompatActivity() {
                 if (barcodes.isEmpty()) {
                     Toast.makeText(this, R.string.scan_image_no_code, Toast.LENGTH_SHORT).show()
                 } else {
-                    handleBarcodes(barcodes)
+                    val primaryBarcode = ImageScanResultSelector.selectPrimaryReadableResult(
+                        barcodes,
+                        content = { barcode -> barcode.rawValue },
+                        area = { barcode ->
+                            barcode.boundingBox?.let { box ->
+                                box.width().toLong() * box.height().toLong()
+                            } ?: 0L
+                        }
+                    )
+                    if (primaryBarcode == null) {
+                        Toast.makeText(
+                            this,
+                            R.string.scan_image_unreadable_content,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        runCatching {
+                            handleBarcodes(listOf(primaryBarcode))
+                        }.onFailure { exception ->
+                            Log.e(TAG, "Unable to handle the selected QR code", exception)
+                            Toast.makeText(
+                                this,
+                                R.string.scan_image_unreadable_content,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
             }
             .addOnFailureListener { exception ->

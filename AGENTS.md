@@ -60,7 +60,7 @@ docs/
 
 ### 掃描與內容處理
 
-- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；掃描主頁也可透過 Android Photo Picker 的相簿縮圖介面選取既有圖片辨識，兩者共用相同的 ML Kit scanner 與結果處理流程。目前掃描主流程會處理辨識到的第一個 Barcode。
+- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；掃描主頁也可透過 Android Photo Picker 的相簿縮圖介面選取既有圖片辨識，兩者共用相同的 ML Kit scanner 與結果處理流程。相機掃描處理第一個 Barcode；圖片內有多個 QR Code 時選擇辨識框面積最大的結果，主要結果沒有可用文字或處理失敗時顯示錯誤提示，不執行後續動作。
 - 掃描啟動時會檢查後鏡頭可用的 AE FPS 範圍；若有上限為 60 FPS 的範圍，Preview 與 ImageAnalysis 會共同請求該範圍，否則保留裝置預設幀率。
 - 純文字保存為 `TYPE.TEXT`，歷史頁使用 ABC 圖示。
 - 網址保存為 `TYPE.REDIRECT`，可取得網頁 `<title>`；標題抓取失敗時仍保留原始網址。
