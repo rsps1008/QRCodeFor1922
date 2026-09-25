@@ -60,7 +60,7 @@ docs/
 
 ### 掃描與內容處理
 
-- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；目前掃描主流程會處理辨識到的第一個 Barcode。
+- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；掃描主頁也可透過 Android Photo Picker 的相簿縮圖介面選取既有圖片辨識，兩者共用相同的 ML Kit scanner 與結果處理流程。目前掃描主流程會處理辨識到的第一個 Barcode。
 - 掃描啟動時會檢查後鏡頭可用的 AE FPS 範圍；若有上限為 60 FPS 的範圍，Preview 與 ImageAnalysis 會共同請求該範圍，否則保留裝置預設幀率。
 - 純文字保存為 `TYPE.TEXT`，歷史頁使用 ABC 圖示。
 - 網址保存為 `TYPE.REDIRECT`，可取得網頁 `<title>`；標題抓取失敗時仍保留原始網址。
@@ -96,7 +96,8 @@ docs/
 - 每個開關都必須同時有標題與簡短、使用者導向的摘要文字。
 - 英文 `values/strings.xml` 與繁體中文 `values-zh-rTW/strings.xml` 必須同步更新。
 - `MainActivity` 啟用 edge-to-edge；掃描預覽可延伸至系統列下方，但設定／歷史頁所在的 `fragment_pref` 必須套用狀態列與導覽列 Insets。
-- 首次啟動預設：開啟後關閉 APP 關閉；Wi-Fi、網址、SMS／電話／Email、文字複製、複製震動開啟。
+- 首次啟動預設：「開啟後關閉 APP」、Wi-Fi、網址、SMS／電話／Email 四項掃描後動作關閉；文字複製與複製震動兩項文字處理開啟。
+- `ScanPreferences` 集中定義上述掃描設定的 key 與預設值；`MainActivity` 在掃描前只補入缺少的預設值，不覆蓋既有使用者設定，`MainViewModel` 的 fallback 必須使用相同預設值。
 - 第一次啟動時依裝置當下的明亮／深色外觀初始化；之後由設定頁的外觀選單保存並套用明亮或深色模式。
 - 設定頁、歷史頁、最愛頁與掃描主頁必須使用相同的主題狀態。
 - 設定頁最下方顯示目前 `versionName`，並提供 `https://qrcode.rsps1008.ru/privacy-policy/` 隱私權政策連結。

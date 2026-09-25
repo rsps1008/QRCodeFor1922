@@ -66,4 +66,7 @@
     <string name="remove_from_favorites">移出我的最愛</string>
     <string name="delete_history_item">移除</string>
     <string name="no_favorites">目前沒有最愛紀錄</string>
+    <string name="scan_from_image">從圖片掃描</string>
+    <string name="scan_image_no_code">圖片中找不到 QR Code</string>
+    <string name="scan_image_failed">無法掃描這張圖片</string>
 </resources>

@@ -3,19 +3,17 @@ package com.rsps1008.qrcode
 import android.annotation.SuppressLint
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.rsps1008.qrcode.ui.QRCodeListener
 
-class QRCodeAnalyzer(private val listener: QRCodeListener) : ImageAnalysis.Analyzer {
-    private val options = BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(
-            Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC
-        )
-        .build()
-    private val scanner = BarcodeScanning.getClient(options)
+class QRCodeAnalyzer(
+    private val scanner: BarcodeScanner,
+    private val listener: QRCodeListener
+) : ImageAnalysis.Analyzer {
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -38,5 +36,16 @@ class QRCodeAnalyzer(private val listener: QRCodeListener) : ImageAnalysis.Analy
 
         }
 
+    }
+
+    companion object {
+        fun createScanner(): BarcodeScanner {
+            val options = BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(
+                    Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC
+                )
+                .build()
+            return BarcodeScanning.getClient(options)
+        }
     }
 }

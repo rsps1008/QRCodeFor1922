@@ -3,45 +3,52 @@ package com.rsps1008.qrcode.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Color
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CaptureRequest
+import android.net.Uri
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.content.res.Configuration
 import android.util.Log
 import android.util.Range
 import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ScaleGestureDetector
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import androidx.camera.camera2.interop.Camera2CameraInfo
-import androidx.camera.camera2.interop.Camera2Interop
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import com.rsps1008.qrcode.QRCodeAnalyzer
 import com.rsps1008.qrcode.R
 import com.rsps1008.qrcode.SettingsPreference
@@ -59,6 +66,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraExecutor: ExecutorService
+    private val barcodeScanner by lazy { QRCodeAnalyzer.createScanner() }
+    private var isSelectingOrScanningImage = false
+    private val selectImage = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri == null) {
+            isSelectingOrScanningImage = false
+        } else {
+            scanImage(uri)
+        }
+    }
 
     private val viewModel: MainViewModel by viewModels()
     private val scaleGestureDetector by lazy {
@@ -79,6 +97,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val preferences = getSharedPreferences(PREFKEY, MODE_PRIVATE)
+        ScanPreferences.initializeMissingDefaults(preferences)
         val storedAppearance = preferences.all[PREF_DARK_MODE]
         val appearance = when (storedAppearance) {
             is String -> storedAppearance
@@ -120,6 +139,16 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         ViewCompat.requestApplyInsets(binding.fragmentPref)
+        val scanImageButtonBottomMargin =
+            (binding.scanFromImageButton.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+        ViewCompat.setOnApplyWindowInsetsListener(binding.scanFromImageButton) { button, insets ->
+            button.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = scanImageButtonBottomMargin +
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            }
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.scanFromImageButton)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -204,7 +233,42 @@ class MainActivity : AppCompatActivity() {
             scaleGestureDetector.onTouchEvent(event)
             true
         }
+        binding.scanFromImageButton.setOnClickListener {
+            isSelectingOrScanningImage = true
+            selectImage.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        }
         viewModel.ready()
+    }
+
+    private fun scanImage(uri: Uri) {
+        val image = try {
+            InputImage.fromFilePath(this, uri)
+        } catch (exception: Exception) {
+            isSelectingOrScanningImage = false
+            Log.e(TAG, "Unable to open the selected image", exception)
+            Toast.makeText(this, R.string.scan_image_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.scanFromImageButton.isEnabled = false
+        barcodeScanner.process(image)
+            .addOnSuccessListener { barcodes ->
+                if (barcodes.isEmpty()) {
+                    Toast.makeText(this, R.string.scan_image_no_code, Toast.LENGTH_SHORT).show()
+                } else {
+                    handleBarcodes(barcodes)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Unable to scan the selected image", exception)
+                Toast.makeText(this, R.string.scan_image_failed, Toast.LENGTH_SHORT).show()
+            }
+            .addOnCompleteListener {
+                isSelectingOrScanningImage = false
+                binding.scanFromImageButton.isEnabled = true
+            }
     }
 
     private fun startCamera() {
@@ -260,7 +324,7 @@ class MainActivity : AppCompatActivity() {
             val imageAnalyzer = imageAnalysisBuilder
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QRCodeAnalyzer(callback))
+                    it.setAnalyzer(cameraExecutor, QRCodeAnalyzer(barcodeScanner, cameraCallback))
                 }
 
             try {
@@ -319,6 +383,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+        barcodeScanner.close()
     }
 
     override fun onRequestPermissionsResult(
@@ -450,20 +515,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFragmentBackground(visible: Boolean) {
+        binding.scanFromImageButton.isVisible = !visible
         binding.fragmentPref.setBackgroundColor(
             if (visible) getColor(R.color.preference_bg_color) else Color.TRANSPARENT
         )
     }
 
-    private val callback = object : QRCodeListener {
+    private val cameraCallback = object : QRCodeListener {
         override fun invoke(barcodes: List<Barcode>) {
-            val isSettingsShow = supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_SETTINGS)
-                .takeIf { it != null }?.isVisible ?: false
-            val isHistoryShow = supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_HISTORY)
-                .takeIf { it != null }?.isVisible ?: false
-            viewModel.isSettingsShowing(isSettingsShow || isHistoryShow)
-            viewModel.newBarcodes(barcodes)
+            if (!isSelectingOrScanningImage) {
+                handleBarcodes(barcodes)
+            }
         }
+    }
+
+    private fun handleBarcodes(barcodes: List<Barcode>) {
+        val isSettingsShow = supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_SETTINGS)
+            .takeIf { it != null }?.isVisible ?: false
+        val isHistoryShow = supportFragmentManager.findFragmentByTag(FRAGMENT_TAG_HISTORY)
+            .takeIf { it != null }?.isVisible ?: false
+        viewModel.isSettingsShowing(isSettingsShow || isHistoryShow)
+        viewModel.newBarcodes(barcodes)
     }
 
     private fun vibrate() {

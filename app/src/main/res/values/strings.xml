@@ -66,4 +66,7 @@
     <string name="remove_from_favorites">Remove from favorites</string>
     <string name="delete_history_item">Delete</string>
     <string name="no_favorites">No favorite records</string>
+    <string name="scan_from_image">Scan from image</string>
+    <string name="scan_image_no_code">No QR code found in this image</string>
+    <string name="scan_image_failed">Unable to scan this image</string>
 </resources>

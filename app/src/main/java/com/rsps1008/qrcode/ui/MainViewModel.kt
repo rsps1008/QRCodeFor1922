@@ -84,7 +84,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             saveResultToDb(barcode.rawValue ?: barcode.sms?.message, TYPE.SMS)
         } else {
             if (barcode.valueType == Barcode.TYPE_WIFI
-                && mPref.getBoolean(PREF_AUTO_ADD_WIFI, true)
+                && mPref.getBoolean(
+                    ScanPreferences.AUTO_ADD_WIFI,
+                    ScanPreferences.DEFAULT_AUTO_ADD_WIFI
+                )
             ) {
                 buildWifiSetupIntent(barcode)?.let { intent ->
                     _startActivity.value = intent
@@ -111,7 +114,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (isUrl) {
                     synchronized(obj) {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(rawValue))
-                        if (mPref.getBoolean(PREF_AUTO_OPEN_URL, false)) {
+                        if (mPref.getBoolean(
+                                ScanPreferences.AUTO_OPEN_URL,
+                                ScanPreferences.DEFAULT_AUTO_OPEN_URL
+                            )
+                        ) {
                             _startActivity.value = intent
                         } else if (getApplication<Application>().packageManager.resolveActivity(intent, 0) != null) {
                             mTempIntent = intent
@@ -125,8 +132,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     saveResultToDb(
                         rawValue,
                         TYPE.REDIRECT,
-                        finishAfterTitle = mPref.getBoolean(PREF_CLOSE_APP_AFTER_SCAN, false)
-                            && mPref.getBoolean(PREF_AUTO_OPEN_URL, false)
+                        finishAfterTitle = mPref.getBoolean(
+                            ScanPreferences.CLOSE_AFTER_SCAN,
+                            ScanPreferences.DEFAULT_CLOSE_AFTER_SCAN
+                        ) && mPref.getBoolean(
+                            ScanPreferences.AUTO_OPEN_URL,
+                            ScanPreferences.DEFAULT_AUTO_OPEN_URL
+                        )
                     )
                 } else {
                     copyToClipboard(rawValue)
@@ -143,9 +155,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun handleActionIntent(barcode: Barcode, intent: Intent) {
-        if (mPref.getBoolean(PREF_AUTO_OPEN_ACTIONS, false)) {
+        if (mPref.getBoolean(
+                ScanPreferences.AUTO_OPEN_ACTIONS,
+                ScanPreferences.DEFAULT_AUTO_OPEN_ACTIONS
+            )
+        ) {
             _startActivity.value = intent
-            if (mPref.getBoolean(PREF_CLOSE_APP_AFTER_SCAN, false)) {
+            if (mPref.getBoolean(
+                    ScanPreferences.CLOSE_AFTER_SCAN,
+                    ScanPreferences.DEFAULT_CLOSE_AFTER_SCAN
+                )
+            ) {
                 _finishActivity.value = true
             }
         } else if (getApplication<Application>().packageManager.resolveActivity(intent, 0) != null) {
@@ -167,8 +187,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun copyToClipboard(text: String) {
-        if (mPref.getBoolean(PREF_AUTO_COPY_TEXT, true)) {
-            if (mPref.getBoolean(PREF_COPY_TEXT_VIBRATE, true)) {
+        if (mPref.getBoolean(
+                ScanPreferences.AUTO_COPY_TEXT,
+                ScanPreferences.DEFAULT_AUTO_COPY_TEXT
+            )
+        ) {
+            if (mPref.getBoolean(
+                    ScanPreferences.COPY_TEXT_VIBRATE,
+                    ScanPreferences.DEFAULT_COPY_TEXT_VIBRATE
+                )
+            ) {
                 _vibrate.value = true
             }
             val clipboardManager =
@@ -275,12 +303,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        private const val PREF_CLOSE_APP_AFTER_SCAN = "close_after_scan"
-        private const val PREF_AUTO_ADD_WIFI = "auto_add_wifi"
-        private const val PREF_AUTO_OPEN_URL = "auto_open_url"
-        private const val PREF_AUTO_OPEN_ACTIONS = "auto_open_actions"
-        private const val PREF_AUTO_COPY_TEXT = "auto_copy_text"
-        private const val PREF_COPY_TEXT_VIBRATE = "vibrate_when_copy_text_success"
         private const val MAX_HTML_SIZE = 512 * 1024
         private val TITLE_PATTERN = Regex("<title[^>]*>(.*?)</title>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
         private val WHITESPACE_PATTERN = Regex("\\s+")

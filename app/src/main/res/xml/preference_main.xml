@@ -14,22 +14,22 @@
         app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
-        android:key="auto_add_wifi"
-        android:defaultValue="true"
-        app:title="@string/auto_add_wifi"
-        app:summary="@string/auto_add_wifi_summary"
-        app:iconSpaceReserved="false" />
-
-    <SwitchPreferenceCompat
         android:key="auto_open_url"
-        android:defaultValue="true"
+        android:defaultValue="false"
         app:title="@string/auto_open_url"
         app:summary="@string/auto_open_url_summary"
         app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
+        android:key="auto_add_wifi"
+        android:defaultValue="false"
+        app:title="@string/auto_add_wifi"
+        app:summary="@string/auto_add_wifi_summary"
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
         android:key="auto_open_actions"
-        android:defaultValue="true"
+        android:defaultValue="false"
         app:title="@string/auto_open_actions"
         app:summary="@string/auto_open_actions_summary"
         app:iconSpaceReserved="false" />
