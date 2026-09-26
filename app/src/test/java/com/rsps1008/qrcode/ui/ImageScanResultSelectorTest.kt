@@ -39,6 +39,12 @@ class ImageScanResultSelectorTest {
         assertNull(selectSingle("broken\uFFFDcontent"))
     }
 
+    @Test
+    fun calculatesEnoughQuietZoneForBorderlessQrCode() {
+        assertEquals(78, ImageScanResultSelector.calculateQuietZonePadding(312, 312))
+        assertEquals(25, ImageScanResultSelector.calculateQuietZonePadding(100, 80))
+    }
+
     private fun selectSingle(content: String): Candidate? {
         return ImageScanResultSelector.selectPrimaryReadableResult(
             listOf(Candidate(content, 1L)),

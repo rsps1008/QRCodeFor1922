@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ImageDecoder
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CaptureRequest
 import android.net.Uri
@@ -49,12 +52,21 @@ import androidx.core.view.updateLayoutParams
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.EncodeHintType
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.common.HybridBinarizer
+import com.google.zxing.qrcode.QRCodeWriter
 import com.rsps1008.qrcode.QRCodeAnalyzer
 import com.rsps1008.qrcode.R
 import com.rsps1008.qrcode.SettingsPreference
 import com.rsps1008.qrcode.databinding.ActivityMainBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.roundToInt
 
 
 typealias QRCodeListener = (barcodes: List<Barcode>) -> Unit
@@ -204,21 +216,23 @@ class MainActivity : AppCompatActivity() {
                 val dialog = MaterialAlertDialogBuilder(this@MainActivity)
                 dialog.setTitle(getString(R.string.detect_content))
                 dialog.setMessage(
-                    String.format(
-                        getString(R.string.confirm_open_content),
+                    getString(
+                        R.string.confirm_open_content,
+                        getOpenTargetName(it),
                         it.rawValue
                     )
                 )
                 dialog.setPositiveButton(
-                    getString(android.R.string.ok)
-                ) { dialog, which ->
+                    getString(R.string.open_content)
+                ) { _, _ ->
                     viewModel.resetRedirectDialog()
                     viewModel.activeIntent()
                 }
                 dialog.setNeutralButton(
                     getString(R.string.copy_to_clipboard)
-                ) { dialog, which ->
-                    viewModel.copyToClipboard(it.rawValue ?: "")
+                ) { _, _ ->
+                    viewModel.resetRedirectDialog()
+                    viewModel.copyDetectedContent(it.rawValue ?: "")
                 }
                 dialog.setNegativeButton(
                     android.R.string.cancel
@@ -242,6 +256,14 @@ class MainActivity : AppCompatActivity() {
         viewModel.ready()
     }
 
+    private fun getOpenTargetName(barcode: Barcode): String = when (barcode.valueType) {
+        Barcode.TYPE_SMS -> getString(R.string.open_target_sms)
+        Barcode.TYPE_PHONE -> getString(R.string.open_target_phone)
+        Barcode.TYPE_EMAIL -> getString(R.string.open_target_email)
+        Barcode.TYPE_WIFI -> getString(R.string.open_target_wifi_settings)
+        else -> getString(R.string.open_target_browser)
+    }
+
     private fun scanImage(uri: Uri) {
         val image = try {
             InputImage.fromFilePath(this, uri)
@@ -253,10 +275,34 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.scanFromImageButton.isEnabled = false
+        processSelectedImage(image, uri, ImageScanAttempt.ORIGINAL)
+    }
+
+    private fun processSelectedImage(
+        image: InputImage,
+        uri: Uri,
+        attempt: ImageScanAttempt
+    ) {
+        var nextAttempt: Pair<InputImage, ImageScanAttempt>? = null
         barcodeScanner.process(image)
             .addOnSuccessListener { barcodes ->
                 if (barcodes.isEmpty()) {
-                    Toast.makeText(this, R.string.scan_image_no_code, Toast.LENGTH_SHORT).show()
+                    nextAttempt = when (attempt) {
+                        ImageScanAttempt.ORIGINAL -> createQuietZoneImage(uri)?.let {
+                            it to ImageScanAttempt.QUIET_ZONE
+                        }
+                        ImageScanAttempt.QUIET_ZONE -> createNormalizedQrImage(uri)?.let {
+                            it to ImageScanAttempt.NORMALIZED_QR
+                        }
+                        ImageScanAttempt.NORMALIZED_QR -> null
+                    }
+                    if (nextAttempt == null) {
+                        Toast.makeText(
+                            this,
+                            R.string.scan_image_no_code,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
                     val primaryBarcode = ImageScanResultSelector.selectPrimaryReadableResult(
                         barcodes,
@@ -292,9 +338,107 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.scan_image_failed, Toast.LENGTH_SHORT).show()
             }
             .addOnCompleteListener {
-                isSelectingOrScanningImage = false
-                binding.scanFromImageButton.isEnabled = true
+                val retry = nextAttempt
+                if (retry != null) {
+                    processSelectedImage(retry.first, uri, retry.second)
+                } else {
+                    isSelectingOrScanningImage = false
+                    binding.scanFromImageButton.isEnabled = true
+                }
             }
+    }
+
+    private fun createQuietZoneImage(uri: Uri): InputImage? = runCatching {
+        val bitmap = decodeSelectedBitmap(uri)
+        val padding = ImageScanResultSelector.calculateQuietZonePadding(
+            bitmap.width,
+            bitmap.height
+        )
+        val paddedBitmap = Bitmap.createBitmap(
+            bitmap.width + padding * 2,
+            bitmap.height + padding * 2,
+            Bitmap.Config.ARGB_8888
+        )
+        Canvas(paddedBitmap).apply {
+            drawColor(Color.WHITE)
+            drawBitmap(bitmap, padding.toFloat(), padding.toFloat(), null)
+        }
+        InputImage.fromBitmap(paddedBitmap, 0)
+    }.onFailure { exception ->
+        Log.e(TAG, "Unable to add a quiet zone to the selected image", exception)
+    }.getOrNull()
+
+    private fun createNormalizedQrImage(uri: Uri): InputImage? = runCatching {
+        val bitmap = decodeSelectedBitmap(uri)
+        val sourcePixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(
+            sourcePixels,
+            0,
+            bitmap.width,
+            0,
+            0,
+            bitmap.width,
+            bitmap.height
+        )
+        val source = RGBLuminanceSource(bitmap.width, bitmap.height, sourcePixels)
+        val decodedText = MultiFormatReader().decode(
+            BinaryBitmap(HybridBinarizer(source)),
+            mapOf(DecodeHintType.TRY_HARDER to true)
+        ).text.takeIf(String::isNotBlank) ?: return@runCatching null
+        val matrix = QRCodeWriter().encode(
+            decodedText,
+            BarcodeFormat.QR_CODE,
+            NORMALIZED_QR_SIZE,
+            NORMALIZED_QR_SIZE,
+            mapOf(
+                EncodeHintType.CHARACTER_SET to Charsets.UTF_8.name(),
+                EncodeHintType.MARGIN to NORMALIZED_QR_MARGIN_MODULES
+            )
+        )
+        val normalizedPixels = IntArray(matrix.width * matrix.height) { index ->
+            val x = index % matrix.width
+            val y = index / matrix.width
+            if (matrix[x, y]) Color.BLACK else Color.WHITE
+        }
+        val normalizedBitmap = Bitmap.createBitmap(
+            matrix.width,
+            matrix.height,
+            Bitmap.Config.ARGB_8888
+        ).apply {
+            setPixels(
+                normalizedPixels,
+                0,
+                matrix.width,
+                0,
+                0,
+                matrix.width,
+                matrix.height
+            )
+        }
+        InputImage.fromBitmap(normalizedBitmap, 0)
+    }.onFailure { exception ->
+        Log.e(TAG, "Unable to normalize the selected QR code", exception)
+    }.getOrNull()
+
+    private fun decodeSelectedBitmap(uri: Uri): Bitmap {
+        val source = ImageDecoder.createSource(contentResolver, uri)
+        return ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            val maxDimension = maxOf(info.size.width, info.size.height)
+            if (maxDimension > MAX_SELECTED_IMAGE_DIMENSION) {
+                val scale = MAX_SELECTED_IMAGE_DIMENSION.toFloat() / maxDimension
+                decoder.setTargetSize(
+                    (info.size.width * scale).roundToInt().coerceAtLeast(1),
+                    (info.size.height * scale).roundToInt().coerceAtLeast(1)
+                )
+            }
+        }
+    }
+
+    private enum class ImageScanAttempt {
+        ORIGINAL,
+        QUIET_ZONE,
+        NORMALIZED_QR
     }
 
     private fun startCamera() {
@@ -578,6 +722,9 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "QRCodeScanner"
         private const val FRAGMENT_TAG_SETTINGS = "settings"
         private const val FRAGMENT_TAG_HISTORY = "history"
+        private const val MAX_SELECTED_IMAGE_DIMENSION = 2048
+        private const val NORMALIZED_QR_SIZE = 768
+        private const val NORMALIZED_QR_MARGIN_MODULES = 8
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }

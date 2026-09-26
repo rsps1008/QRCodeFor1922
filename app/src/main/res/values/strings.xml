@@ -22,8 +22,14 @@
     <string name="auto_open_url_summary">Open scanned web links directly in the browser</string>
     <string name="auto_open_actions">Open SMS, phone, and email right away</string>
     <string name="auto_open_actions_summary">Go straight to the matching phone feature or app</string>
-    <string name="confirm_open_content">This content will be opened by another app. Continue?\n%s</string>
+    <string name="confirm_open_content">This content will be opened with %1$s. Continue?\n%2$s</string>
     <string name="detect_content">Open detected content</string>
+    <string name="open_content">Open</string>
+    <string name="open_target_browser">a browser</string>
+    <string name="open_target_sms">the messaging app</string>
+    <string name="open_target_phone">the phone app</string>
+    <string name="open_target_email">the email app</string>
+    <string name="open_target_wifi_settings">Wi-Fi settings</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="auto_copy_text">Copy scanned text automatically</string>
     <string name="auto_copy_text_summary">Copy the scanned text right away</string>

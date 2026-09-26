@@ -22,8 +22,14 @@
     <string name="auto_open_url_summary">掃描網址後直接透過瀏覽器打開網站</string>
     <string name="auto_open_actions">簡訊、電話和 Email 直接開啟</string>
     <string name="auto_open_actions_summary">掃描後直接轉跳到系統對應功能／APP</string>
-    <string name="confirm_open_content">這段內容將由其他 App 開啟，確定要繼續嗎？\n%s</string>
+    <string name="confirm_open_content">這段內容將使用「%1$s」開啟，確定要繼續嗎？\n%2$s</string>
     <string name="detect_content">開啟偵測到的內容</string>
+    <string name="open_content">開啟</string>
+    <string name="open_target_browser">瀏覽器</string>
+    <string name="open_target_sms">簡訊 App</string>
+    <string name="open_target_phone">電話 App</string>
+    <string name="open_target_email">郵件 App</string>
+    <string name="open_target_wifi_settings">Wi-Fi 設定</string>
     <string name="copy_to_clipboard">複製到剪貼簿</string>
     <string name="auto_copy_text">掃描文字後自動複製</string>
     <string name="auto_copy_text_summary">掃描後自動複製該文字</string>

@@ -12,6 +12,7 @@
 - Kotlin、AndroidX、Material Components、View Binding
 - CameraX 負責相機預覽與影像分析
 - Google ML Kit Barcode Scanning 負責條碼／QR Code 辨識
+- ZXing Core 僅作為相簿圖片無法由 ML Kit 直接辨識時的 QR 內容正規化備援
 - Room 負責掃描歷史資料
 - Google Sign-In 與 Google Drive `appDataFolder` 負責歷史／最愛備份
 - Gradle Wrapper：以專案內 `gradlew.bat` 執行
@@ -60,13 +61,13 @@ docs/
 
 ### 掃描與內容處理
 
-- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；掃描主頁也可透過 Android Photo Picker 的相簿縮圖介面選取既有圖片辨識，兩者共用相同的 ML Kit scanner 與結果處理流程。相機掃描處理第一個 Barcode；圖片內有多個 QR Code 時選擇辨識框面積最大的結果，主要結果沒有可用文字或處理失敗時顯示錯誤提示，不執行後續動作。
+- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；掃描主頁也可透過 Android Photo Picker 的相簿縮圖介面選取既有圖片辨識，兩者共用相同的 ML Kit scanner 與結果處理流程。相簿圖片第一次找不到條碼時，會在記憶體中縮放過大的圖片、於四周補上長邊 25% 的白色 quiet zone，並在前一次 ML Kit 工作完成後循序重試；仍找不到時才用 ZXing 解碼並重建含八模組邊界的標準 QR，再交回 ML Kit 做既有內容類型解析。相機掃描處理第一個 Barcode。圖片內有多個 QR Code 時選擇辨識框面積最大的結果，主要結果沒有可用文字或處理失敗時顯示錯誤提示，不執行後續動作。
 - 掃描啟動時會檢查後鏡頭可用的 AE FPS 範圍；若有上限為 60 FPS 的範圍，Preview 與 ImageAnalysis 會共同請求該範圍，否則保留裝置預設幀率。
 - 純文字保存為 `TYPE.TEXT`，歷史頁使用 ABC 圖示。
 - 網址保存為 `TYPE.REDIRECT`，可取得網頁 `<title>`；標題抓取失敗時仍保留原始網址。
 - SMS、電話、Email、Wi-Fi 各自保存為獨立 `TYPE`，歷史頁使用對應圖示。
-- 網址、SMS、電話、Email 的自動開啟行為由設定控制；關閉時會先顯示確認提示。
-- Wi-Fi 使用 Android 系統的加入網路確認流程，不由 App 靜默連線。
+- 網址、SMS、電話、Email 的自動開啟行為由設定控制；關閉時會顯示「開啟偵測到的內容」對話框，讓使用者選擇開啟或複製到剪貼簿。
+- Wi-Fi 使用 Android 系統的加入網路確認流程，不由 App 靜默連線；關閉自動連線時同樣顯示「開啟偵測到的內容」對話框，讓使用者選擇開啟或複製到剪貼簿。
 - 純文字的自動複製與複製後震動由設定控制。
 - 「開啟後關閉 APP」若啟用，應在相關外部動作完成必要的保存／標題處理後再關閉。
 

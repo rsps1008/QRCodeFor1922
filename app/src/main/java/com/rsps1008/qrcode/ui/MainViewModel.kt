@@ -80,23 +80,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 data = Uri.parse("smsto:${barcode.sms?.phoneNumber.orEmpty()}")
                 putExtra("sms_body", barcode.sms?.message.orEmpty())
             }
-            handleActionIntent(barcode, sendIntent)
+            handleActionIntent(
+                barcode,
+                sendIntent,
+                mPref.getBoolean(
+                    ScanPreferences.AUTO_OPEN_ACTIONS,
+                    ScanPreferences.DEFAULT_AUTO_OPEN_ACTIONS
+                )
+            )
             saveResultToDb(barcode.rawValue ?: barcode.sms?.message, TYPE.SMS)
         } else {
-            if (barcode.valueType == Barcode.TYPE_WIFI
-                && mPref.getBoolean(
-                    ScanPreferences.AUTO_ADD_WIFI,
-                    ScanPreferences.DEFAULT_AUTO_ADD_WIFI
+            if (barcode.valueType == Barcode.TYPE_WIFI) {
+                val wifiIntent = buildWifiSetupIntent(barcode)
+                    ?: Intent(Settings.ACTION_WIFI_SETTINGS)
+                handleActionIntent(
+                    barcode,
+                    wifiIntent,
+                    mPref.getBoolean(
+                        ScanPreferences.AUTO_ADD_WIFI,
+                        ScanPreferences.DEFAULT_AUTO_ADD_WIFI
+                    )
                 )
-            ) {
-                buildWifiSetupIntent(barcode)?.let { intent ->
-                    _startActivity.value = intent
-                } ?: copyToClipboard(barcode.rawValue ?: "")
                 saveResultToDb(barcode.rawValue, TYPE.WIFI)
             } else if (barcode.valueType == Barcode.TYPE_PHONE) {
                 handleActionIntent(
                     barcode,
-                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:${barcode.phone?.number.orEmpty()}"))
+                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:${barcode.phone?.number.orEmpty()}")),
+                    mPref.getBoolean(
+                        ScanPreferences.AUTO_OPEN_ACTIONS,
+                        ScanPreferences.DEFAULT_AUTO_OPEN_ACTIONS
+                    )
                 )
                 saveResultToDb(barcode.rawValue, TYPE.PHONE)
             } else if (barcode.valueType == Barcode.TYPE_EMAIL) {
@@ -106,7 +119,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         putExtra(Intent.EXTRA_SUBJECT, email?.subject.orEmpty())
                         putExtra(Intent.EXTRA_TEXT, email?.body.orEmpty())
                     }
-                handleActionIntent(barcode, emailIntent)
+                handleActionIntent(
+                    barcode,
+                    emailIntent,
+                    mPref.getBoolean(
+                        ScanPreferences.AUTO_OPEN_ACTIONS,
+                        ScanPreferences.DEFAULT_AUTO_OPEN_ACTIONS
+                    )
+                )
                 saveResultToDb(barcode.rawValue, TYPE.EMAIL)
             } else {
                 val rawValue = barcode.rawValue.orEmpty()
@@ -154,12 +174,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         mHasTrigger = true
     }
 
-    private fun handleActionIntent(barcode: Barcode, intent: Intent) {
-        if (mPref.getBoolean(
-                ScanPreferences.AUTO_OPEN_ACTIONS,
-                ScanPreferences.DEFAULT_AUTO_OPEN_ACTIONS
-            )
-        ) {
+    private fun handleActionIntent(barcode: Barcode, intent: Intent, autoOpen: Boolean) {
+        if (autoOpen) {
             _startActivity.value = intent
             if (mPref.getBoolean(
                     ScanPreferences.CLOSE_AFTER_SCAN,
@@ -168,15 +184,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             ) {
                 _finishActivity.value = true
             }
-        } else if (getApplication<Application>().packageManager.resolveActivity(intent, 0) != null) {
+        } else {
             synchronized(obj) {
                 mTempIntent = intent
                 _showDetectOtherDialog.value = barcode
                 _showDetectOtherDialog.value = null
                 bRedirectDialogShowing = true
             }
-        } else {
-            copyToClipboard(barcode.rawValue ?: "")
         }
     }
 
@@ -192,20 +206,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 ScanPreferences.DEFAULT_AUTO_COPY_TEXT
             )
         ) {
-            if (mPref.getBoolean(
-                    ScanPreferences.COPY_TEXT_VIBRATE,
-                    ScanPreferences.DEFAULT_COPY_TEXT_VIBRATE
-                )
-            ) {
-                _vibrate.value = true
-            }
-            val clipboardManager =
-                getApplication<Application>().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip: ClipData = ClipData.newPlainText("simple text", text)
-            clipboardManager.setPrimaryClip(clip)
-            _copyAlready.value = text
-            _copyAlready.value = ""
+            copyTextToClipboard(text)
         }
+    }
+
+    fun copyDetectedContent(text: String) {
+        copyTextToClipboard(text)
+    }
+
+    private fun copyTextToClipboard(text: String) {
+        if (mPref.getBoolean(
+                ScanPreferences.COPY_TEXT_VIBRATE,
+                ScanPreferences.DEFAULT_COPY_TEXT_VIBRATE
+            )
+        ) {
+            _vibrate.value = true
+        }
+        val clipboardManager =
+            getApplication<Application>().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip: ClipData = ClipData.newPlainText("simple text", text)
+        clipboardManager.setPrimaryClip(clip)
+        _copyAlready.value = text
+        _copyAlready.value = ""
     }
 
     fun isSettingsShowing(show: Boolean) {
