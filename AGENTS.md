@@ -61,7 +61,7 @@ docs/
 
 ### 掃描與內容處理
 
-- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；掃描主頁也可透過 Android Photo Picker 的相簿縮圖介面選取既有圖片辨識，兩者共用相同的 ML Kit scanner 與結果處理流程。相簿圖片第一次找不到條碼時，會在記憶體中縮放過大的圖片、於四周補上長邊 25% 的白色 quiet zone，並在前一次 ML Kit 工作完成後循序重試；仍找不到時才用 ZXing 解碼並重建含八模組邊界的標準 QR，再交回 ML Kit 做既有內容類型解析。相機掃描處理第一個 Barcode。圖片內有多個 QR Code 時選擇辨識框面積最大的結果，主要結果沒有可用文字或處理失敗時顯示錯誤提示，不執行後續動作。
+- `QRCodeAnalyzer` 將 CameraX 影像交給 ML Kit；第一次從掃描主頁點擊「從圖片掃描」時，App 會詢問並保存預設圖片來源。設定頁「掃描設定」區塊最上方的「圖片選擇方式」可隨時改成 Android Photo Picker「從相片選擇」，或以 Storage Access Framework `OpenDocument`「從檔案瀏覽」；若使用者先在設定頁主動選擇，首頁不再重複詢問。兩種方式選回圖片後共用相同的 ML Kit scanner 與結果處理流程。相簿圖片第一次找不到條碼時，會在記憶體中縮放過大的圖片、於四周補上長邊 25% 的白色 quiet zone，並在前一次 ML Kit 工作完成後循序重試；仍找不到時才用 ZXing 解碼並重建含八模組邊界的標準 QR，再交回 ML Kit 做既有內容類型解析。相機掃描處理第一個 Barcode。圖片內有多個 QR Code 時選擇辨識框面積最大的結果，主要結果沒有可用文字或處理失敗時顯示錯誤提示，不執行後續動作。
 - 掃描啟動時會檢查後鏡頭可用的 AE FPS 範圍；若有上限為 60 FPS 的範圍，Preview 與 ImageAnalysis 會共同請求該範圍，否則保留裝置預設幀率。
 - 純文字保存為 `TYPE.TEXT`，歷史頁使用 ABC 圖示。
 - 網址保存為 `TYPE.REDIRECT`，可取得網頁 `<title>`；標題抓取失敗時仍保留原始網址。
@@ -97,7 +97,7 @@ docs/
 - 每個開關都必須同時有標題與簡短、使用者導向的摘要文字。
 - 英文 `values/strings.xml` 與繁體中文 `values-zh-rTW/strings.xml` 必須同步更新。
 - `MainActivity` 啟用 edge-to-edge；掃描預覽可延伸至系統列下方，但設定／歷史頁所在的 `fragment_pref` 必須套用狀態列與導覽列 Insets。
-- 首次啟動預設：「開啟後關閉 APP」、Wi-Fi、網址、SMS／電話／Email 四項掃描後動作關閉；文字複製與複製震動兩項文字處理開啟。
+- 首次啟動預設：圖片選擇方式的初始值為「從相片選擇」，但第一次從首頁使用時仍需由使用者確認預設來源；「開啟後關閉 APP」、Wi-Fi、網址、SMS／電話／Email 四項掃描後動作關閉；文字複製與複製震動兩項文字處理開啟。
 - `ScanPreferences` 集中定義上述掃描設定的 key 與預設值；`MainActivity` 在掃描前只補入缺少的預設值，不覆蓋既有使用者設定，`MainViewModel` 的 fallback 必須使用相同預設值。
 - 第一次啟動時依裝置當下的明亮／深色外觀初始化；之後由設定頁的外觀選單保存並套用明亮或深色模式。
 - 設定頁、歷史頁、最愛頁與掃描主頁必須使用相同的主題狀態。

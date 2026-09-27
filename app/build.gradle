@@ -11,8 +11,8 @@ android {
         applicationId "com.rsps1008.qrcode"
         minSdkVersion 30
         targetSdkVersion 37
-        versionCode 723
-        versionName "7.2.3"
+        versionCode 724
+        versionName "7.2.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

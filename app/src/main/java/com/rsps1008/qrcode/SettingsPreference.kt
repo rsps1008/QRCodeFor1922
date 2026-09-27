@@ -24,6 +24,7 @@ import com.google.api.services.drive.DriveScopes
 import com.rsps1008.qrcode.backup.GoogleDriveService
 import com.rsps1008.qrcode.backup.ScanResultBackup
 import com.rsps1008.qrcode.ui.MainActivity.Companion.PREFKEY
+import com.rsps1008.qrcode.ui.ScanPreferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -127,6 +128,14 @@ class SettingsPreference : PreferenceFragmentCompat() {
             )
             true
         }
+        findPreference<ListPreference>(ScanPreferences.IMAGE_SOURCE)
+            ?.setOnPreferenceChangeListener { _, _ ->
+                requireContext().getSharedPreferences(PREFKEY, Activity.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean(ScanPreferences.IMAGE_SOURCE_CHOICE_CONFIRMED, true)
+                    .apply()
+                true
+            }
         updateGoogleDrivePreferences()
     }
 

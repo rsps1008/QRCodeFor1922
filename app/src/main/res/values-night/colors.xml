@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="preference_bg_color">#121212</color>
-    <color name="history_item_background">#FF1E1B24</color>
-    <color name="history_item_stroke">#FF164A63</color>
-    <color name="history_icon_background">#FF0D2A36</color>
-    <color name="history_icon_tint">#FF81D4FA</color>
+    <color name="history_item_background">#FF142128</color>
+    <color name="history_item_stroke">#FF2F6478</color>
+    <color name="history_icon_background">#FF0A303E</color>
+    <color name="history_icon_tint">#FF62B5D1</color>
     <color name="favorite_tint">#FFFFD54F</color>
     <color name="menu_icon_selected">#FFFFFFFF</color>
     <color name="menu_icon_unselected">#99FFFFFF</color>

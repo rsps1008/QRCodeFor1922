@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="image_source_entries">
+        <item>@string/select_from_photos</item>
+        <item>@string/browse_image_files</item>
+    </string-array>
+    <string-array name="image_source_entry_values">
+        <item>photo_picker</item>
+        <item>file_browser</item>
+    </string-array>
     <string-array name="appearance_entries">
         <item>@string/appearance_light</item>
         <item>@string/appearance_dark</item>

@@ -19,16 +19,17 @@ class ScanPreferencesTest {
 
         assertEquals(expectedDefaults, ScanPreferences.defaults)
         assertEquals(expectedDefaults, readSwitchDefaultsFromSettingsXml())
+
+        val expectedStringDefaults = mapOf("image_source" to "photo_picker")
+        assertEquals(expectedStringDefaults, ScanPreferences.stringDefaults)
+        assertEquals(
+            expectedStringDefaults,
+            readListDefaultsFromSettingsXml(expectedStringDefaults.keys)
+        )
     }
 
     private fun readSwitchDefaultsFromSettingsXml(): Map<String, Boolean> {
-        val settingsFile = sequenceOf(
-            File("src/main/res/xml/preference_main.xml"),
-            File("app/src/main/res/xml/preference_main.xml")
-        ).first(File::isFile)
-        val document = DocumentBuilderFactory.newInstance().apply {
-            isNamespaceAware = true
-        }.newDocumentBuilder().parse(settingsFile)
+        val document = readSettingsDocument()
         val switches = document.getElementsByTagName("SwitchPreferenceCompat")
 
         return buildMap {
@@ -44,6 +45,40 @@ class ScanPreferencesTest {
                 put(key, defaultValue)
             }
         }
+    }
+
+    private fun readListDefaultsFromSettingsXml(keys: Set<String>): Map<String, String> {
+        val lists = readSettingsDocument().getElementsByTagName("ListPreference")
+
+        return buildMap {
+            for (index in 0 until lists.length) {
+                val element = lists.item(index)
+                val key = element.attributes
+                    .getNamedItemNS(ANDROID_NAMESPACE, "key")
+                    .nodeValue
+                if (key in keys) {
+                    put(
+                        key,
+                        element.attributes
+                            .getNamedItemNS(ANDROID_NAMESPACE, "defaultValue")
+                            .nodeValue
+                    )
+                }
+            }
+        }
+    }
+
+    private fun readSettingsDocument() =
+        DocumentBuilderFactory.newInstance().apply {
+            isNamespaceAware = true
+        }.newDocumentBuilder().parse(settingsFile())
+
+    private fun settingsFile(): File {
+        val settingsFile = sequenceOf(
+            File("src/main/res/xml/preference_main.xml"),
+            File("app/src/main/res/xml/preference_main.xml")
+        ).first(File::isFile)
+        return settingsFile
     }
 
     private companion object {

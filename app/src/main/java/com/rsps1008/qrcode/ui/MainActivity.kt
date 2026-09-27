@@ -80,15 +80,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
     private val barcodeScanner by lazy { QRCodeAnalyzer.createScanner() }
     private var isSelectingOrScanningImage = false
-    private val selectImage = registerForActivityResult(
+    private val selectPhoto = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        if (uri == null) {
-            isSelectingOrScanningImage = false
-        } else {
-            scanImage(uri)
-        }
-    }
+    ) { uri -> handleSelectedImage(uri) }
+    private val browseImageFile = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> handleSelectedImage(uri) }
 
     private val viewModel: MainViewModel by viewModels()
     private val scaleGestureDetector by lazy {
@@ -249,11 +246,70 @@ class MainActivity : AppCompatActivity() {
         }
         binding.scanFromImageButton.setOnClickListener {
             isSelectingOrScanningImage = true
-            selectImage.launch(
+            val preferences = getSharedPreferences(PREFKEY, MODE_PRIVATE)
+            if (preferences.getBoolean(
+                    ScanPreferences.IMAGE_SOURCE_CHOICE_CONFIRMED,
+                    false
+                )
+            ) {
+                launchImageSource(
+                    preferences.getString(
+                        ScanPreferences.IMAGE_SOURCE,
+                        ScanPreferences.DEFAULT_IMAGE_SOURCE
+                    )
+                )
+            } else {
+                showInitialImageSourceDialog()
+            }
+        }
+        viewModel.ready()
+    }
+
+    private fun showInitialImageSourceDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.image_source_first_use_title)
+            .setItems(
+                arrayOf(
+                    getString(R.string.select_from_photos),
+                    getString(R.string.browse_image_files)
+                )
+            ) { _, which ->
+                val imageSource = if (which == 1) {
+                    ScanPreferences.IMAGE_SOURCE_FILE_BROWSER
+                } else {
+                    ScanPreferences.IMAGE_SOURCE_PHOTO_PICKER
+                }
+                getSharedPreferences(PREFKEY, MODE_PRIVATE).edit()
+                    .putString(ScanPreferences.IMAGE_SOURCE, imageSource)
+                    .putBoolean(ScanPreferences.IMAGE_SOURCE_CHOICE_CONFIRMED, true)
+                    .apply()
+                launchImageSource(imageSource)
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
+                isSelectingOrScanningImage = false
+            }
+            .setOnCancelListener {
+                isSelectingOrScanningImage = false
+            }
+            .show()
+    }
+
+    private fun launchImageSource(imageSource: String?) {
+        if (imageSource == ScanPreferences.IMAGE_SOURCE_FILE_BROWSER) {
+            browseImageFile.launch(arrayOf("image/*"))
+        } else {
+            selectPhoto.launch(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
             )
         }
-        viewModel.ready()
+    }
+
+    private fun handleSelectedImage(uri: Uri?) {
+        if (uri == null) {
+            isSelectingOrScanningImage = false
+        } else {
+            scanImage(uri)
+        }
     }
 
     private fun getOpenTargetName(barcode: Barcode): String = when (barcode.valueType) {

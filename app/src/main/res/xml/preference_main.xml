@@ -6,6 +6,15 @@
         android:title="@string/settings_scan"
         app:iconSpaceReserved="false" />
 
+    <ListPreference
+        android:key="image_source"
+        android:defaultValue="photo_picker"
+        app:title="@string/image_source"
+        app:entries="@array/image_source_entries"
+        app:entryValues="@array/image_source_entry_values"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+
     <SwitchPreferenceCompat
         android:key="close_after_scan"
         android:defaultValue="false"

@@ -73,6 +73,10 @@
     <string name="delete_history_item">Delete</string>
     <string name="no_favorites">No favorite records</string>
     <string name="scan_from_image">Scan from image</string>
+    <string name="image_source">Image selection method</string>
+    <string name="image_source_first_use_title">Choose your default image source</string>
+    <string name="select_from_photos">Choose from photos</string>
+    <string name="browse_image_files">Browse image files</string>
     <string name="scan_image_no_code">No QR code found in this image</string>
     <string name="scan_image_failed">Unable to scan this image</string>
     <string name="scan_image_unreadable_content">Unable to recognize the main QR code content</string>
