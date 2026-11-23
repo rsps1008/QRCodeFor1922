@@ -23,6 +23,7 @@ import android.view.ScaleGestureDetector
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -45,7 +46,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
             if (darkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
         )
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -136,14 +136,18 @@ class MainActivity : AppCompatActivity() {
             invalidateOptionsMenu()
         }
         val fragmentPaddingLeft = binding.fragmentPref.paddingLeft
+        val fragmentPaddingTop = binding.fragmentPref.paddingTop
         val fragmentPaddingRight = binding.fragmentPref.paddingRight
+        val fragmentPaddingBottom = binding.fragmentPref.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(binding.fragmentPref) { fragmentContainer, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
             fragmentContainer.setPadding(
-                fragmentPaddingLeft,
-                systemBars.top,
-                fragmentPaddingRight,
-                systemBars.bottom
+                fragmentPaddingLeft + systemBars.left,
+                fragmentPaddingTop + systemBars.top,
+                fragmentPaddingRight + systemBars.right,
+                fragmentPaddingBottom + systemBars.bottom
             )
             insets
         }
@@ -153,7 +157,9 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.scanFromImageButton) { button, insets ->
             button.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = scanImageButtonBottomMargin +
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+                    insets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+                    ).bottom
             }
             insets
         }
