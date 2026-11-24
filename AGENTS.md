@@ -49,7 +49,7 @@ app/src/main/res/
 └── values-night/                 # 深色主題顏色與主題
 
 docs/
-├── index.html                    # qrcode.rsps1008.ru 網站首頁
+├── index.html                    # GitHub Pages 網站首頁
 ├── privacy-policy/index.html     # 上架用隱私權政策頁
 ├── license/index.html            # MIT／原始 Apache 授權說明頁
 ├── styles.css                    # 網站共用樣式
@@ -102,7 +102,7 @@ docs/
 - `ScanPreferences` 集中定義上述掃描設定的 key 與預設值；`MainActivity` 在掃描前只補入缺少的預設值，不覆蓋既有使用者設定，`MainViewModel` 的 fallback 必須使用相同預設值。
 - 第一次啟動時依裝置當下的明亮／深色外觀初始化；之後由設定頁的外觀選單保存並套用明亮或深色模式。
 - 設定頁、歷史頁、最愛頁與掃描主頁必須使用相同的主題狀態。
-- 設定頁最下方顯示目前 `versionName`，並提供 `https://qrcode.rsps1008.ru/privacy-policy/` 隱私權政策連結。
+- 設定頁最下方顯示目前 `versionName`，並提供 `https://rsps1008.github.io/QRCodeFor1922/privacy-policy/` 隱私權政策連結。
 - App 主題主色與歷史紀錄卡片圖示配色使用大海藍色系，日間與夜間模式分別維持足夠對比。
 - Google Drive 功能使用 `DriveScopes.DRIVE_APPDATA`；沒有登入或未授予該 scope 時，備份／還原選項必須停用。
 
@@ -145,7 +145,7 @@ docs/
 
 ### 網站與公開文件
 
-- 網站使用 `docs/` 靜態檔案，正式網域為 `https://qrcode.rsps1008.ru/`；`docs/CNAME` 由維護者自行管理。
+- 網站使用 `docs/` 靜態檔案，GitHub Pages 專案網站為 `https://rsps1008.github.io/QRCodeFor1922/`。
 - 首頁、隱私權政策與授權頁必須使用 App icon，並維持目前專案 GitHub、原始專案 `asadman1523/QRCodeFor1922` 與 `Copyright (C) 2021 YuJhen` 的清楚歸屬說明。
 - 隱私權政策只能描述目前原始碼與 Manifest 可確認的資料處理；程式行為變更時，需同步檢查 `PrivacyPolicy.md` 與 `docs/privacy-policy/index.html`。
 - `LICENSE` 適用於本專案新增／修改部分；源自原始專案的程式碼仍須保留 `LICENSE-APACHE-2.0` 與原作者資訊。第三方元件列於 `THIRD_PARTY_LICENSES.md`。

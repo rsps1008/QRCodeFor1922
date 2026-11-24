@@ -332,6 +332,6 @@ class SettingsPreference : PreferenceFragmentCompat() {
 
     private companion object {
         const val TAG = "SettingsPreference"
-        const val PRIVACY_POLICY_URL = "https://qrcode.rsps1008.ru/privacy-policy/"
+        const val PRIVACY_POLICY_URL = "https://rsps1008.github.io/QRCodeFor1922/privacy-policy/"
     }
 }

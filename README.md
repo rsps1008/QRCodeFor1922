@@ -2,7 +2,7 @@
 
 簡單、快速、以隱私為優先的 Android QR Code 掃描器。
 
-官方網站：<https://qrcode.rsps1008.ru/>
+官方網站：<https://rsps1008.github.io/QRCodeFor1922/>
 
 ## 功能
 
@@ -14,7 +14,7 @@
 - 可選擇自動複製文字與震動提示
 - 支援明亮／深色外觀
 
-掃描歷史資料預設儲存在裝置本機；你也可以在設定頁選擇使用 Google Drive 應用程式資料備份。完整資料處理方式請參閱[隱私權政策](https://qrcode.rsps1008.ru/privacy-policy/)。
+掃描歷史資料預設儲存在裝置本機；你也可以在設定頁選擇使用 Google Drive 應用程式資料備份。完整資料處理方式請參閱[隱私權政策](https://rsps1008.github.io/QRCodeFor1922/privacy-policy/)。
 
 ## 開源來源與致謝
 
@@ -48,4 +48,4 @@ Windows PowerShell：
 
 ## 網站
 
-網站原始檔位於 [`docs/`](./docs/)，GitHub Pages 網域由 `docs/CNAME` 設定為 `qrcode.rsps1008.ru`。網站包含[首頁](https://qrcode.rsps1008.ru/)、[隱私權政策](https://qrcode.rsps1008.ru/privacy-policy/)與[授權說明](https://qrcode.rsps1008.ru/license/)。
+網站原始檔位於 [`docs/`](./docs/)，GitHub Pages 專案網站為 `https://rsps1008.github.io/QRCodeFor1922/`。網站包含[首頁](https://rsps1008.github.io/QRCodeFor1922/)、[隱私權政策](https://rsps1008.github.io/QRCodeFor1922/privacy-policy/)與[授權說明](https://rsps1008.github.io/QRCodeFor1922/license/)。

@@ -2,7 +2,7 @@
 
 最後更新日期：2026 年 9 月 25 日
 
-本政策適用於 QR Code Scanner Android 應用程式。網站版政策請參閱 <https://qrcode.rsps1008.ru/privacy-policy/>。
+本政策適用於 QR Code Scanner Android 應用程式。網站版政策請參閱 <https://rsps1008.github.io/QRCodeFor1922/privacy-policy/>。
 
 ## 開發者資訊
 
